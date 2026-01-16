@@ -29,8 +29,15 @@
     <input type="file" id="fileInput" accept="application/pdf" multiple hidden>
 </div>
 
+  <div class="tabs">
+    <a class="tab" href="index.html">JPG</a>
+    <a class="tab" href="webp.html">WebP</a>
+    <a class="tab" href="png.html">PNG</a>
+    <a class="tab active" href="pdf.html">PDF</a>
+</div>
+  
 <!-- PDF EINSTELLUNGEN -->
-<div class="settings">
+<div class="tabContent active" id="pdf">
     <label>
         Bildqualität:
         <strong><span id="pdfVal">70</span>%</strong>
