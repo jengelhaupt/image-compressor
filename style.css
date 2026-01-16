@@ -90,7 +90,6 @@ input[type=range] {
     text-decoration:none;
     font-size: 10px;
     color:grey;
-    padding-bottom: 20px;
 }
 
 #breadcrumbs a:hover {
