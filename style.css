@@ -1,0 +1,73 @@
+body {
+    font-family: Open Sans, Arial, sans-serif;
+    background:#f4f4f4;
+    padding:20px;
+}
+
+.container {
+    background:#fff;
+    padding:20px;
+    border-radius:8px;
+}
+
+.dropzone {
+    border:2px dashed #aaa;
+    padding:30px;
+    text-align:center;
+    cursor:pointer;
+    margin-bottom:20px;
+}
+
+.dropzone.dragover {
+    background:#eef;
+}
+
+.settings {
+    margin-bottom:20px;
+}
+
+input[type=range] {
+    width:100%;
+}
+
+.previewItem {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+    margin-top:20px;
+    padding:15px;
+    border:1px solid #ddd;
+    background:#fafafa;
+    border-radius:6px;
+}
+
+.previewItem img {
+    width:100%;
+    max-height:280px;
+    object-fit:contain;
+    background:#fff;
+    border:1px solid #ccc;
+}
+
+.info {
+    grid-column:span 2;
+    font-size:14px;
+}
+
+.download {
+    grid-column:span 2;
+    background:#4CAF50;
+    color:white;
+    text-align:center;
+    padding:10px;
+    border-radius:5px;
+    text-decoration:none;
+}
+
+#zipBtn {
+    background:#4CAF50;
+    color:white;
+    width:100%;
+    padding:10px;
+    border:none;
+}
