@@ -71,7 +71,7 @@ input[type=range] {
     background:#f5f5f5;
 }
 
-.tab.active {
+.active {
     font-weight:900;
 }
 
