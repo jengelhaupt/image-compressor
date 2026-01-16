@@ -71,7 +71,7 @@ input[type=range] {
     background:#f5f5f5;
 }
 
-.tab.active {
+.tab active {
     font-weight:bold;
 }
 
@@ -90,6 +90,7 @@ input[type=range] {
     text-decoration:none;
     font-size: 10px;
     color:grey;
+    margin-bottom:20px;
 }
 
 #breadcrumbs a:hover {
