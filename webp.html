@@ -31,12 +31,16 @@
            multiple hidden>
 </div>
 
+  <div class="tabs">
+    <a class="tab" href="index.html">JPG</a>
+    <a class="tab active" href="webp.html">WebP</a>
+    <a class="tab" href="png.html">PNG</a>
+    <a class="tab" href="pdf.html">PDF</a>
+</div>
+
 <!-- WEBP EINSTELLUNGEN -->
-<div class="settings">
-    <label>
-        WebP Qualität:
-        <strong><span id="webpVal">70</span>%</strong>
-    </label>
+<div class="tabContent active" id="webp">
+    <label>WebP Qualität: <span id="webpVal">70</span>%</label>
     <input type="range" id="webpQ" min="10" max="100" step="1" value="70">
 </div>
 
