@@ -20,6 +20,11 @@ p {
     border-radius:8px;
 }
 
+.container-head {
+    background:#e9ecef;
+    margin:none !important;
+}
+
 .dropzone {
     border:2px dashed #aaa;
     padding:70px;
