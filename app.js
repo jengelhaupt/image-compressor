@@ -7,6 +7,7 @@ const ACTIVE = typeof MODE !== "undefined" ? MODE : "jpg";
 
 let files = [];
 let zipFiles = [];
+let originalImages = []; // einmal geladen und gecacht
 
 /* Controls */
 let controlInput, controlLabel;
@@ -35,6 +36,7 @@ if (ACTIVE === "pdf") {
 if (controlInput) {
     controlInput.oninput = () => {
         controlLabel.textContent = controlInput.value;
+        // Slider ändert nur die Kompression, nutzt gecachte Images
         render();
     };
 }
@@ -50,20 +52,32 @@ dropzone.ondragover = e => {
 dropzone.ondragleave = () =>
     dropzone.classList.remove("dragover");
 
-/* --- Hier ändern wir die Drop-Logik --- */
-dropzone.ondrop = async e => {
-    e.preventDefault();
-    dropzone.classList.remove("dragover");
-    files = [...e.dataTransfer.files];
+/* --- Upload / Drop Events --- */
+fileInput.onchange = async e => {
+    files = [...e.target.files];
+    originalImages = await Promise.all(files.map(loadImage));
     await render();
     preview.scrollIntoView({ behavior: "smooth" });
 };
 
-fileInput.onchange = async e => {
-    files = [...e.target.files];
+dropzone.ondrop = async e => {
+    e.preventDefault();
+    dropzone.classList.remove("dragover");
+    files = [...e.dataTransfer.files];
+    originalImages = await Promise.all(files.map(loadImage));
     await render();
     preview.scrollIntoView({ behavior: "smooth" });
 };
+
+// Hilfsfunktion: lädt Image einmalig und speichert zusammen mit File
+async function loadImage(file) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        img.onload = () => resolve({ file, img });
+        img.onerror = reject;
+    });
+}
 
 /* PNG Quantisierung */
 function quantize(ctx, w, h, colors) {
@@ -84,16 +98,17 @@ async function render() {
     preview.innerHTML = "";
     zipFiles = [];
 
-    if (files.length === 0) return;
+    if (originalImages.length === 0) return;
 
-    for (const file of files) {
+    for (const item of originalImages) {
+        const file = item.file;
+        const img = item.img;
 
         /* ---------- PDF ---------- */
         if (ACTIVE === "pdf" && file.type === "application/pdf") {
             const bytes = await file.arrayBuffer();
             const pdf = await PDFLib.PDFDocument.load(bytes);
 
-            // Neuspeichern (entfernt Redundanzen)
             const outBytes = await pdf.save({
                 useObjectStreams: true,
                 compress: true
@@ -121,10 +136,6 @@ async function render() {
 
         /* ---------- IMAGES ---------- */
         if (!file.type.startsWith("image/")) continue;
-
-        const img = new Image();
-        img.src = URL.createObjectURL(file);
-        await img.decode();
 
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
