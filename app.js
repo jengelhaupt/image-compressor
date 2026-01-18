@@ -7,7 +7,7 @@ const ACTIVE = typeof MODE !== "undefined" ? MODE : "jpg";
 
 let files = [];
 let zipFiles = [];
-let originalImages = []; // einmal geladen und gecacht
+let originalImages = []; // Originalbilder einmal laden und cachen
 
 /* Controls */
 let controlInput, controlLabel;
@@ -32,12 +32,11 @@ if (ACTIVE === "pdf") {
     controlLabel = document.getElementById("pdfVal");
 }
 
-/* Slider */
+/* Slider: nur die Kompression ändern, keine neuen Images */
 if (controlInput) {
     controlInput.oninput = () => {
-        controlLabel.textContent = controlInput.value;
-        // Slider ändert nur die Kompression, nutzt gecachte Images
-        render();
+        controlLabel.textContent = controlInput.value; // Text sofort aktualisieren
+        render(); // Nur Canvas-Kompression auf gecachten Images
     };
 }
 
@@ -52,10 +51,10 @@ dropzone.ondragover = e => {
 dropzone.ondragleave = () =>
     dropzone.classList.remove("dragover");
 
-/* --- Upload / Drop Events --- */
+/* Upload / Drop Events */
 fileInput.onchange = async e => {
     files = [...e.target.files];
-    originalImages = await Promise.all(files.map(loadImage));
+    originalImages = await Promise.all(files.map(loadImage)); // einmal laden
     await render();
     preview.scrollIntoView({ behavior: "smooth" });
 };
@@ -64,12 +63,12 @@ dropzone.ondrop = async e => {
     e.preventDefault();
     dropzone.classList.remove("dragover");
     files = [...e.dataTransfer.files];
-    originalImages = await Promise.all(files.map(loadImage));
+    originalImages = await Promise.all(files.map(loadImage)); // einmal laden
     await render();
     preview.scrollIntoView({ behavior: "smooth" });
 };
 
-// Hilfsfunktion: lädt Image einmalig und speichert zusammen mit File
+// Hilfsfunktion: lädt Images einmalig
 async function loadImage(file) {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -93,7 +92,7 @@ function quantize(ctx, w, h, colors) {
     ctx.putImageData(img, 0, 0);
 }
 
-/* Render */
+/* Render: nur Canvas neu erstellen, Originalbilder bleiben */
 async function render() {
     preview.innerHTML = "";
     zipFiles = [];
