@@ -177,7 +177,6 @@ async function render() {
         `;
     }
 }
-    // ✅ Automatisch zur Preview scrollen
     preview.scrollIntoView({ behavior: "smooth" });
 }
 
