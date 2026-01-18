@@ -194,6 +194,3 @@ zipBtn.onclick = async () => {
     a.download = `${ACTIVE}-komprimiert.zip`;
     a.click();
 };
-
-    preview.scrollIntoView({ behavior: "smooth" });
-}
