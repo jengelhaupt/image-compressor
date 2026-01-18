@@ -50,16 +50,19 @@ dropzone.ondragover = e => {
 dropzone.ondragleave = () =>
     dropzone.classList.remove("dragover");
 
-dropzone.ondrop = e => {
+/* --- Hier ändern wir die Drop-Logik --- */
+dropzone.ondrop = async e => {
     e.preventDefault();
     dropzone.classList.remove("dragover");
     files = [...e.dataTransfer.files];
-    render();
+    await render();
+    preview.scrollIntoView({ behavior: "smooth" });
 };
 
-fileInput.onchange = e => {
+fileInput.onchange = async e => {
     files = [...e.target.files];
-    render();
+    await render();
+    preview.scrollIntoView({ behavior: "smooth" });
 };
 
 /* PNG Quantisierung */
@@ -80,6 +83,8 @@ function quantize(ctx, w, h, colors) {
 async function render() {
     preview.innerHTML = "";
     zipFiles = [];
+
+    if (files.length === 0) return;
 
     for (const file of files) {
 
@@ -176,12 +181,6 @@ async function render() {
             </div>
         `;
     }
-}
-
-if (files.length > 0) {
-    requestAnimationFrame(() => {
-        preview.scrollIntoView({ behavior: "smooth" });
-    });
 }
 
 /* ZIP */
