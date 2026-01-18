@@ -177,6 +177,9 @@ async function render() {
         `;
     }
 }
+    // ✅ Automatisch zur Preview scrollen
+    preview.scrollIntoView({ behavior: "smooth" });
+}
 
 /* ZIP */
 zipBtn.onclick = async () => {
@@ -191,6 +194,6 @@ zipBtn.onclick = async () => {
     a.download = `${ACTIVE}-komprimiert.zip`;
     a.click();
 };
-    // ✅ Automatisch zur Preview scrollen
+
     preview.scrollIntoView({ behavior: "smooth" });
 }
