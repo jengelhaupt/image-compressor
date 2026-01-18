@@ -178,11 +178,6 @@ async function render() {
     }
 }
 
-// Am Ende von render()
-requestAnimationFrame(() => {
-    preview.scrollIntoView({ behavior: "smooth" });
-});
-
 /* ZIP */
 zipBtn.onclick = async () => {
     if (!zipFiles.length) return;
