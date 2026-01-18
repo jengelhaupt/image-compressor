@@ -178,9 +178,11 @@ async function render() {
     }
 }
 
-requestAnimationFrame(() => {
-    preview.scrollIntoView({ behavior: "smooth" });
-});
+if (files.length > 0) {
+    requestAnimationFrame(() => {
+        preview.scrollIntoView({ behavior: "smooth" });
+    });
+}
 
 /* ZIP */
 zipBtn.onclick = async () => {
