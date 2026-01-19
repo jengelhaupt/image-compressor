@@ -117,7 +117,23 @@
 
 <p>Ich behalte mir vor, diese Datenschutzerklärung anzupassen, z. B. bei neuen Diensten oder rechtlichen Änderungen.</p> 
     </div>
-
+         <script>
+window.addEventListener("load", function(){
+  window.cookieconsent.initialise({
+    "palette": {
+      "popup": { "background": "#000" },
+      "button": { "background": "#fff" }
+    },
+    "theme": "classic",
+    "content": {
+      "message": "Diese Website verwendet Cookies, um dir das beste Erlebnis zu bieten.",
+      "dismiss": "Verstanden",
+      "link": "Mehr erfahren",
+      "href": "/datenschutz.html"
+    }
+  })
+});
+</script>
     </body>
  <br>
     <footer><p style="text-align: center"><a href="https://free-img-compressor.de/nutzungsbedingungen.html">Nutzungsbedingungen/Hinweis</a> | <a href="https://free-img-compressor.de/datenschutz.html">Datenschutzerklärung</a><p></footer>
