@@ -23,7 +23,7 @@ window.consentManagerConfig = {
     ga4: {
       category: 'analytics',
       type: 'script',
-      src: 'https://www.googletagmanager.com/gtag/js?id=G-520294707',
+      src: 'https://www.googletagmanager.com/gtag/js?id=G-9CKX7Z8CV9',
       async: true
     }
   },
@@ -38,7 +38,7 @@ window.consentManagerConfig = {
 
     if (consent.analytics) {
       gtag('js', new Date());
-      gtag('config', 'G-XXXXXXX', {
+      gtag('config', 'G-9CKX7Z8CV9', {
         anonymize_ip: true
       });
     }
