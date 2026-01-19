@@ -108,34 +108,35 @@
 <p>Ich behalte mir vor, diese Datenschutzerklärung anzupassen, z. B. bei neuen Diensten oder rechtlichen Änderungen.</p> 
     </div>
     <link rel="stylesheet" href="/assets/consent/consent-manager.css">
-<script src="/assets/consent/consent-manager.js" defer></script>
+<script src="/assets/consent/consent-manager.js"></script>
 <script>
-window.consentManagerConfig = {
-  language: 'de',
-  guiOptions: {
-    consentModal: { layout: 'bar', position: 'bottom', equalWeightButtons: true }
-  },
-  categories: {
-    necessary: { enabled: true, readOnly: true },
-    analytics: { enabled: false }
-  },
-  services: {
-    ga4: {
-      category: 'analytics',
-      type: 'script',
-      src: 'https://www.googletagmanager.com/gtag/js?id=G-9CKX7Z8CV9',
-      async: true
+document.addEventListener("DOMContentLoaded", function() {
+  window.consentManagerConfig = {
+    language: 'de',
+    guiOptions: { consentModal: { layout: 'bar', position: 'bottom' } },
+    categories: {
+      necessary: { enabled: true, readOnly: true },
+      analytics: { enabled: false }
+    },
+    services: {
+      ga4: {
+        category: 'analytics',
+        type: 'script',
+        src: 'https://www.googletagmanager.com/gtag/js?id=G-9CKX7Z8CV9',
+        async: true
+      }
+    },
+    onConsent: function(consent) {
+      if (consent.analytics) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('consent', 'update', { analytics_storage: 'granted' });
+        gtag('js', new Date());
+        gtag('config', 'G-9CKX7Z8CV9', { anonymize_ip: true });
+      }
     }
-  },
-  onConsent: function(consent) {
-    if (consent.analytics) {
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('consent', 'update', { analytics_storage: 'granted' });
-      gtag('js', new Date());
-      gtag('config', 'G-9CKX7Z8CV9', { anonymize_ip: true });
-    }
-  },
+  };
+});
   languages: {
     de: {
       consentModal: {
