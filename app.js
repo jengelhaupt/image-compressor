@@ -40,7 +40,10 @@ if (controlInput) {
 
 /* Drag & Drop */
 dropzone.onclick = () => fileInput.click();
-dropzone.ondragover = e => { e.preventDefault(); dropzone.classList.add("dragover"); };
+dropzone.ondragover = e => {
+    e.preventDefault();
+    dropzone.classList.add("dragover");
+};
 dropzone.ondragleave = () => dropzone.classList.remove("dragover");
 
 /* Upload */
@@ -62,8 +65,21 @@ dropzone.ondrop = async e => {
 
 /* Prepare images */
 async function prepareImages() {
+
+    // 🔒 WebP Mode: nur JPG / PNG / WebP erlauben
+    if (ACTIVE === "webp") {
+        files = files.filter(f =>
+            f.type === "image/jpeg" ||
+            f.type === "image/png" ||
+            f.type === "image/webp"
+        );
+    }
+
     originalImages = await Promise.all(
         files.map(file => new Promise((resolve, reject) => {
+            if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+                return reject();
+            }
             const img = new Image();
             img.src = URL.createObjectURL(file);
             img.onload = () => resolve({ file, img });
@@ -74,12 +90,12 @@ async function prepareImages() {
     preview.innerHTML = "";
     previewItems = [];
 
-    for (const item of originalImages) {
+    originalImages.forEach(({ file }) => {
         const container = document.createElement("div");
         container.className = "previewItem";
 
         const origImg = document.createElement("img");
-        origImg.src = URL.createObjectURL(item.file);
+        origImg.src = URL.createObjectURL(file);
 
         const compressedImg = document.createElement("img");
 
@@ -88,19 +104,16 @@ async function prepareImages() {
 
         const downloadLink = document.createElement("a");
         downloadLink.className = "download";
-        downloadLink.textContent = "Einzeln herunterladen";
+        downloadLink.download = file.name;
 
-        container.appendChild(origImg);
-        container.appendChild(compressedImg);
-        container.appendChild(infoDiv);
-        container.appendChild(downloadLink);
-
+        container.append(origImg, compressedImg, infoDiv, downloadLink);
         preview.appendChild(container);
-        previewItems.push({ compressedImg, infoDiv, downloadLink });
-    }
+
+        previewItems.push({ origImg, compressedImg, infoDiv, downloadLink });
+    });
 }
 
-/* PNG Quantisierung – UNVERÄNDERT */
+/* PNG Quantisierung */
 function quantize(ctx, w, h, colors) {
     const img = ctx.getImageData(0, 0, w, h);
     const d = img.data;
@@ -120,27 +133,25 @@ async function render() {
 
     for (let i = 0; i < originalImages.length; i++) {
         const { file, img } = originalImages[i];
-        const previewItem = previewItems[i];
+        const ui = previewItems[i];
 
-        /* PDF – UNVERÄNDERT */
+        /* PDF */
         if (ACTIVE === "pdf" && file.type === "application/pdf") {
             const bytes = await file.arrayBuffer();
             const pdf = await PDFLib.PDFDocument.load(bytes);
             const outBytes = await pdf.save({ useObjectStreams: true, compress: true });
-
             const blob = new Blob([outBytes]);
+
             zipFiles.push({ name: file.name, blob });
-
-            previewItem.infoDiv.innerHTML =
+            ui.infoDiv.innerHTML =
                 `Original ${(file.size/1024).toFixed(1)} KB → ` +
-                `${(outBytes.byteLength/1024).toFixed(1)} KB`;
-
-            previewItem.downloadLink.href = URL.createObjectURL(blob);
-            previewItem.downloadLink.download = file.name;
+                `${(blob.size/1024).toFixed(1)} KB (PDF)`;
+            ui.downloadLink.href = URL.createObjectURL(blob);
+            ui.downloadLink.download = file.name;
             continue;
         }
 
-        /* Bilder */
+        /* Images */
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;
@@ -148,19 +159,20 @@ async function render() {
         ctx.drawImage(img, 0, 0);
 
         let type =
-            ACTIVE === "jpg"
-                ? "image/jpeg"
-                : ACTIVE === "webp"
-                ? "image/webp"
-                : "image/png";
+            ACTIVE === "jpg"  ? "image/jpeg" :
+            ACTIVE === "png"  ? "image/png"  :
+            "image/webp";
 
-        let quality = (ACTIVE === "png") ? 1 : controlInput.value / 100;
-        if (ACTIVE === "png") quantize(ctx, canvas.width, canvas.height, controlInput.value);
+        let quality = ACTIVE === "png" ? 1 : controlInput.value / 100;
+
+        if (ACTIVE === "png") {
+            quantize(ctx, canvas.width, canvas.height, controlInput.value);
+        }
 
         let blob = await new Promise(r => canvas.toBlob(r, type, quality));
 
-        /* 🔒 Größen-Kappe: niemals größer als Original */
-        if (blob.size >= file.size) {
+        // 🔒 Größenschutz NUR bei 100 %
+        if (controlInput.value === 100 && blob.size > file.size) {
             blob = file;
         }
 
@@ -171,16 +183,16 @@ async function render() {
 
         zipFiles.push({ name: outName, blob });
 
-        previewItem.compressedImg.src = URL.createObjectURL(blob);
-        previewItem.downloadLink.href = URL.createObjectURL(blob);
-        previewItem.downloadLink.download = outName;
+        ui.compressedImg.src = URL.createObjectURL(blob);
+        ui.downloadLink.href = URL.createObjectURL(blob);
+        ui.downloadLink.download = outName;
 
         if (blob === file) {
-            previewItem.infoDiv.textContent =
-                `Original ${(file.size/1024).toFixed(1)} KB → unverändert`;
+            ui.infoDiv.textContent =
+                `Original ${(file.size/1024).toFixed(1)} KB → unverändert (100%)`;
         } else {
             const saved = 100 - (blob.size / file.size * 100);
-            previewItem.infoDiv.textContent =
+            ui.infoDiv.textContent =
                 `Original ${(file.size/1024).toFixed(1)} KB → ` +
                 `Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
         }
@@ -193,7 +205,6 @@ zipBtn.onclick = async () => {
     const zip = new JSZip();
     zipFiles.forEach(f => zip.file(f.name, f.blob));
     const blob = await zip.generateAsync({ type: "blob" });
-
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `${ACTIVE}-komprimiert.zip`;
