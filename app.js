@@ -17,17 +17,14 @@ if (ACTIVE === "jpg") {
     controlInput = document.getElementById("jpgQ");
     controlLabel = document.getElementById("jpgVal");
 }
-
 if (ACTIVE === "webp") {
     controlInput = document.getElementById("webpQ");
     controlLabel = document.getElementById("webpVal");
 }
-
 if (ACTIVE === "png") {
     controlInput = document.getElementById("pngC");
     controlLabel = document.getElementById("pngVal");
 }
-
 if (ACTIVE === "pdf") {
     controlInput = document.getElementById("pdfQ");
     controlLabel = document.getElementById("pdfVal");
@@ -43,23 +40,12 @@ if (controlInput) {
 
 /* Drag & Drop */
 dropzone.onclick = () => fileInput.click();
-dropzone.ondragover = e => {
-    e.preventDefault();
-    dropzone.classList.add("dragover");
-};
+dropzone.ondragover = e => { e.preventDefault(); dropzone.classList.add("dragover"); };
 dropzone.ondragleave = () => dropzone.classList.remove("dragover");
 
 /* Upload */
 fileInput.onchange = async e => {
-    let incoming = [...e.target.files];
-
-    if (ACTIVE === "webp") {
-        incoming = incoming.filter(f =>
-            ["image/jpeg", "image/png", "image/webp"].includes(f.type)
-        );
-    }
-
-    files = incoming;
+    files = [...e.target.files];
     await prepareImages();
     render();
     preview.scrollIntoView({ behavior: "smooth" });
@@ -68,22 +54,13 @@ fileInput.onchange = async e => {
 dropzone.ondrop = async e => {
     e.preventDefault();
     dropzone.classList.remove("dragover");
-
-    let incoming = [...e.dataTransfer.files];
-
-    if (ACTIVE === "webp") {
-        incoming = incoming.filter(f =>
-            ["image/jpeg", "image/png", "image/webp"].includes(f.type)
-        );
-    }
-
-    files = incoming;
+    files = [...e.dataTransfer.files];
     await prepareImages();
     render();
     preview.scrollIntoView({ behavior: "smooth" });
 };
 
-/* Originalbilder laden */
+/* Prepare images */
 async function prepareImages() {
     originalImages = await Promise.all(
         files.map(file => new Promise((resolve, reject) => {
@@ -97,9 +74,7 @@ async function prepareImages() {
     preview.innerHTML = "";
     previewItems = [];
 
-    for (let i = 0; i < originalImages.length; i++) {
-        const item = originalImages[i];
-
+    for (const item of originalImages) {
         const container = document.createElement("div");
         container.className = "previewItem";
 
@@ -107,7 +82,6 @@ async function prepareImages() {
         origImg.src = URL.createObjectURL(item.file);
 
         const compressedImg = document.createElement("img");
-        compressedImg.dataset.index = i;
 
         const infoDiv = document.createElement("div");
         infoDiv.className = "info";
@@ -122,7 +96,7 @@ async function prepareImages() {
         container.appendChild(downloadLink);
 
         preview.appendChild(container);
-        previewItems.push({ origImg, compressedImg, infoDiv, downloadLink });
+        previewItems.push({ compressedImg, infoDiv, downloadLink });
     }
 }
 
@@ -154,12 +128,14 @@ async function render() {
             const pdf = await PDFLib.PDFDocument.load(bytes);
             const outBytes = await pdf.save({ useObjectStreams: true, compress: true });
 
-            zipFiles.push({ name: file.name, blob: new Blob([outBytes]) });
-            previewItem.infoDiv.innerHTML = `
-                Original: ${(file.size / 1024).toFixed(1)} KB<br>
-                Neu: ${(outBytes.byteLength / 1024).toFixed(1)} KB
-            `;
-            previewItem.downloadLink.href = URL.createObjectURL(new Blob([outBytes]));
+            const blob = new Blob([outBytes]);
+            zipFiles.push({ name: file.name, blob });
+
+            previewItem.infoDiv.innerHTML =
+                `Original ${(file.size/1024).toFixed(1)} KB → ` +
+                `${(outBytes.byteLength/1024).toFixed(1)} KB`;
+
+            previewItem.downloadLink.href = URL.createObjectURL(blob);
             previewItem.downloadLink.download = file.name;
             continue;
         }
@@ -181,7 +157,12 @@ async function render() {
         let quality = (ACTIVE === "png") ? 1 : controlInput.value / 100;
         if (ACTIVE === "png") quantize(ctx, canvas.width, canvas.height, controlInput.value);
 
-        const blob = await new Promise(r => canvas.toBlob(r, type, quality));
+        let blob = await new Promise(r => canvas.toBlob(r, type, quality));
+
+        /* 🔒 Größen-Kappe: niemals größer als Original */
+        if (blob.size >= file.size) {
+            blob = file;
+        }
 
         const outName =
             ACTIVE === "webp"
@@ -194,10 +175,15 @@ async function render() {
         previewItem.downloadLink.href = URL.createObjectURL(blob);
         previewItem.downloadLink.download = outName;
 
-        const saved = 100 - (blob.size / file.size * 100);
-        previewItem.infoDiv.textContent =
-            `Original ${(file.size / 1024).toFixed(1)} KB → ` +
-            `Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+        if (blob === file) {
+            previewItem.infoDiv.textContent =
+                `Original ${(file.size/1024).toFixed(1)} KB → unverändert`;
+        } else {
+            const saved = 100 - (blob.size / file.size * 100);
+            previewItem.infoDiv.textContent =
+                `Original ${(file.size/1024).toFixed(1)} KB → ` +
+                `Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+        }
     }
 }
 
