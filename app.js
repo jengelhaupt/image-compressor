@@ -114,6 +114,7 @@ async function prepareImages() {
 
         const downloadLink = document.createElement("a");
         downloadLink.className = "download";
+        downloadLink.textContent = "Einzeln herunterladen";
 
         container.appendChild(origImg);
         container.appendChild(compressedImg);
