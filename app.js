@@ -233,6 +233,6 @@ zipBtn.onclick = async () => {
     const blob = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `${ACTIVE}-output.zip`;
+    a.download = `${ACTIVE}-komprimiert.zip`;
     a.click();
 };
