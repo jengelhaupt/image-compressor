@@ -100,8 +100,7 @@ async function prepareImages() {
 
         const downloadLink = document.createElement("a");
         downloadLink.className = "download";
-    // Text für alle Dateien setzen
-    downloadLink.textContent = `Datei herunterladen`;
+        downloadLink.textContent = "Datei herunterladen";
 
         container.append(origImg, compressedImg, infoDiv, downloadLink);
         preview.appendChild(container);
