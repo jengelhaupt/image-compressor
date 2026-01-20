@@ -7,8 +7,8 @@ const ACTIVE = typeof MODE !== "undefined" ? MODE : "jpg";
 
 let files = [];
 let zipFiles = [];
-let originalImages = [];
-let previewItems = [];
+let originalImages = []; // Originalbilder cachen
+let previewItems = [];   // Container für Preview-Elemente
 
 /* Controls */
 let controlInput, controlLabel;
@@ -17,36 +17,36 @@ if (ACTIVE === "jpg") {
     controlInput = document.getElementById("jpgQ");
     controlLabel = document.getElementById("jpgVal");
 }
+
 if (ACTIVE === "webp") {
     controlInput = document.getElementById("webpQ");
     controlLabel = document.getElementById("webpVal");
 }
+
 if (ACTIVE === "png") {
     controlInput = document.getElementById("pngC");
     controlLabel = document.getElementById("pngVal");
 }
+
 if (ACTIVE === "pdf") {
     controlInput = document.getElementById("pdfQ");
     controlLabel = document.getElementById("pdfVal");
 }
 
-/* Slider */
+/* Slider: nur Kompression aktualisieren */
 if (controlInput) {
     controlInput.oninput = () => {
         controlLabel.textContent = controlInput.value;
-        render();
+        render(); // nur Canvas neu komprimieren
     };
 }
 
 /* Drag & Drop */
 dropzone.onclick = () => fileInput.click();
-dropzone.ondragover = e => {
-    e.preventDefault();
-    dropzone.classList.add("dragover");
-};
+dropzone.ondragover = e => { e.preventDefault(); dropzone.classList.add("dragover"); };
 dropzone.ondragleave = () => dropzone.classList.remove("dragover");
 
-/* Upload */
+/* Upload / Drop Events */
 fileInput.onchange = async e => {
     files = [...e.target.files];
     await prepareImages();
@@ -63,54 +63,44 @@ dropzone.ondrop = async e => {
     preview.scrollIntoView({ behavior: "smooth" });
 };
 
-/* Prepare images */
+// Originalbilder laden und cachen
 async function prepareImages() {
+    originalImages = await Promise.all(files.map(file => new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        img.onload = () => resolve({ file, img });
+        img.onerror = reject;
+    })));
 
-    // 🔒 WebP Mode: nur JPG / PNG / WebP erlauben
-    if (ACTIVE === "webp") {
-        files = files.filter(f =>
-            f.type === "image/jpeg" ||
-            f.type === "image/png" ||
-            f.type === "image/webp"
-        );
-    }
-
-    originalImages = await Promise.all(
-        files.map(file => new Promise((resolve, reject) => {
-            if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
-                return reject();
-            }
-            const img = new Image();
-            img.src = URL.createObjectURL(file);
-            img.onload = () => resolve({ file, img });
-            img.onerror = reject;
-        }))
-    );
-
+    // Preview-Container einmalig erstellen
     preview.innerHTML = "";
     previewItems = [];
-
-    originalImages.forEach(({ file }) => {
+    for (let i = 0; i < originalImages.length; i++) {
+        const item = originalImages[i];
         const container = document.createElement("div");
         container.className = "previewItem";
 
         const origImg = document.createElement("img");
-        origImg.src = URL.createObjectURL(file);
+        origImg.src = URL.createObjectURL(item.file);
 
-        const compressedImg = document.createElement("img");
+        const compressedImg = document.createElement("img"); // wird per Canvas aktualisiert
+        compressedImg.dataset.index = i;
 
         const infoDiv = document.createElement("div");
         infoDiv.className = "info";
 
         const downloadLink = document.createElement("a");
         downloadLink.className = "download";
-        downloadLink.download = file.name;
+        downloadLink.download = item.file.name;
 
-        container.append(origImg, compressedImg, infoDiv, downloadLink);
+        container.appendChild(origImg);
+        container.appendChild(compressedImg);
+        container.appendChild(infoDiv);
+        container.appendChild(downloadLink);
+
         preview.appendChild(container);
-
-        previewItems.push({ origImg, compressedImg, infoDiv, downloadLink });
-    });
+        previewItems.push({ container, origImg, compressedImg, infoDiv, downloadLink });
+    }
 }
 
 /* PNG Quantisierung */
@@ -126,76 +116,54 @@ function quantize(ctx, w, h, colors) {
     ctx.putImageData(img, 0, 0);
 }
 
-/* Render */
+/* Render: nur Canvas-Kompression auf vorhandene Bilder */
 async function render() {
     zipFiles = [];
-    if (!originalImages.length) return;
+    if (originalImages.length === 0) return;
 
     for (let i = 0; i < originalImages.length; i++) {
         const { file, img } = originalImages[i];
-        const ui = previewItems[i];
+        const previewItem = previewItems[i];
 
-        /* PDF */
+        // PDF
         if (ACTIVE === "pdf" && file.type === "application/pdf") {
             const bytes = await file.arrayBuffer();
             const pdf = await PDFLib.PDFDocument.load(bytes);
             const outBytes = await pdf.save({ useObjectStreams: true, compress: true });
-            const blob = new Blob([outBytes]);
 
-            zipFiles.push({ name: file.name, blob });
-            ui.infoDiv.innerHTML =
-                `Original ${(file.size/1024).toFixed(1)} KB → ` +
-                `${(blob.size/1024).toFixed(1)} KB (PDF)`;
-            ui.downloadLink.href = URL.createObjectURL(blob);
-            ui.downloadLink.download = file.name;
+            zipFiles.push({ name: file.name, blob: new Blob([outBytes]) });
+            previewItem.infoDiv.innerHTML = `
+                Original: ${(file.size/1024).toFixed(1)} KB<br>
+                Neu: ${(outBytes.byteLength/1024).toFixed(1)} KB
+                (PDF komprimiert)
+            `;
+            previewItem.downloadLink.href = URL.createObjectURL(new Blob([outBytes]));
+            previewItem.downloadLink.download = file.name;
             continue;
         }
 
-        /* Images */
+        // Bilder
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
 
-        let type =
-            ACTIVE === "jpg"  ? "image/jpeg" :
-            ACTIVE === "png"  ? "image/png"  :
-            "image/webp";
+        let type = ACTIVE === "jpg" ? "image/jpeg" : ACTIVE === "webp" ? "image/webp" : "image/png";
+        let quality = (ACTIVE === "png") ? 1 : controlInput.value / 100;
+        if (ACTIVE === "png") quantize(ctx, canvas.width, canvas.height, controlInput.value);
 
-        let quality = ACTIVE === "png" ? 1 : controlInput.value / 100;
+        const blob = await new Promise(r => canvas.toBlob(r, type, quality));
+        zipFiles.push({ name: file.name, blob });
 
-        if (ACTIVE === "png") {
-            quantize(ctx, canvas.width, canvas.height, controlInput.value);
-        }
+        // Nur den src des bestehenden <img> aktualisieren
+        previewItem.compressedImg.src = URL.createObjectURL(blob);
 
-        let blob = await new Promise(r => canvas.toBlob(r, type, quality));
+        const saved = 100 - (blob.size / file.size * 100);
+        previewItem.infoDiv.textContent = `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
 
-        // 🔒 Größenschutz NUR bei 100 %
-        if (controlInput.value === 100 && blob.size > file.size) {
-            blob = file;
-        }
-
-        const outName =
-            ACTIVE === "webp"
-                ? file.name.replace(/\.(jpe?g|png|webp)$/i, ".webp")
-                : file.name;
-
-        zipFiles.push({ name: outName, blob });
-
-        ui.compressedImg.src = URL.createObjectURL(blob);
-        ui.downloadLink.href = URL.createObjectURL(blob);
-        ui.downloadLink.download = outName;
-
-        if (blob === file) {
-            ui.infoDiv.textContent =
-                `Original ${(file.size/1024).toFixed(1)} KB → unverändert (100%)`;
-        } else {
-            const saved = 100 - (blob.size / file.size * 100);
-            ui.infoDiv.textContent =
-                `Original ${(file.size/1024).toFixed(1)} KB → ` +
-                `Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-        }
+        previewItem.downloadLink.href = URL.createObjectURL(blob);
+        previewItem.downloadLink.download = file.name;
     }
 }
 
