@@ -1,6 +1,6 @@
 // compress-png-wokrers.js
 
-importScripts('https://cdn.jsdelivr.net/npm/image-q@1.1.0/dist/image-q.min.js');
+importScripts('https://cdn.jsdelivr.net/npm/image-q@2.0.3/dist/cjs/image-q.js');
 
 self.onmessage = async (e) => {
     const { file, colors } = e.data;
