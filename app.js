@@ -73,6 +73,35 @@ dropzone.ondrop = async e => {
 };
 
 /* =========================
+   WORKER INIT
+========================= */
+let pngWorker = null;
+
+function initPngWorker() {
+    if (!pngWorker) {
+        pngWorker = new Worker("compress-png-worker.js", { type: "module" });
+    }
+}
+
+function compressPngBlob(file, quality = 256) {
+    return new Promise(async (resolve, reject) => {
+        initPngWorker();
+        const id = crypto.randomUUID();
+        const arrayBuffer = await file.arrayBuffer();
+
+        const handler = (e) => {
+            if (e.data.id !== id) return;
+            if (e.data.success) resolve(new Blob([e.data.data], { type: "image/png" }));
+            else reject(new Error(e.data.error));
+            pngWorker.removeEventListener("message", handler);
+        };
+
+        pngWorker.addEventListener("message", handler);
+        pngWorker.postMessage({ type: "compress_png", id, data: arrayBuffer, quality }, [arrayBuffer]);
+    });
+}
+
+/* =========================
    PREPARE IMAGES
 ========================= */
 async function prepareImages() {
@@ -107,21 +136,6 @@ async function prepareImages() {
 
         previewItems.push({ origImg, compressedImg, infoDiv, downloadLink });
     });
-}
-
-/* =========================
-   PNG QUANTIZE
-========================= */
-function quantize(ctx, w, h, colors) {
-    const img = ctx.getImageData(0, 0, w, h);
-    const d = img.data;
-    const step = Math.max(1, Math.floor(256 / Math.cbrt(colors)));
-    for (let i = 0; i < d.length; i += 4) {
-        d[i]     = Math.floor(d[i]     / step) * step;
-        d[i + 1] = Math.floor(d[i + 1] / step) * step;
-        d[i + 2] = Math.floor(d[i + 2] / step) * step;
-    }
-    ctx.putImageData(img, 0, 0);
 }
 
 /* =========================
@@ -183,29 +197,73 @@ async function render() {
             continue;
         }
 
-        /* -------- JPG / PNG -------- */
-        if (percent >= 100) {
-            zipFiles.push({ name: file.name, blob: file });
-            p.compressedImg.src = URL.createObjectURL(file);
+        /* -------- JPG -------- */
+        if (ACTIVE === "jpg" || percent >= 100) {
+            const type = "image/jpeg";
+            const quality = Math.min(0.99, percent / 100);
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+
+            let blob = await new Promise(r => canvas.toBlob(r, type, quality));
+            if (blob.size >= file.size) blob = file;
+
+            zipFiles.push({ name: file.name, blob });
+            p.compressedImg.src = URL.createObjectURL(blob);
+
+            const saved = 100 - (blob.size / file.size * 100);
             p.infoDiv.textContent =
-                `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(file.size/1024).toFixed(1)} KB (0%)`;
-            p.downloadLink.href = URL.createObjectURL(file);
+                `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+
+            p.downloadLink.href = URL.createObjectURL(blob);
             p.downloadLink.download = file.name;
             continue;
         }
 
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
-
-        let type = ACTIVE === "jpg" ? "image/jpeg" : "image/png";
-        let quality = ACTIVE === "jpg" ? Math.min(0.99, percent / 100) : 1;
-
+        /* -------- PNG via Worker -------- */
         if (ACTIVE === "png") {
-            quantize(ctx, canvas.width, canvas.height, percent);
+            // Worker erstellen
+            const worker = new Worker("compress-png-worker.js");
+            const blob = await new Promise((resolve, reject) => {
+                worker.onmessage = e => resolve(e.data);
+                worker.onerror = reject;
+                // Datei und Quantisierungswert senden
+                worker.postMessage({ file, colors: percent });
+            });
+
+            zipFiles.push({ name: file.name, blob });
+            p.compressedImg.src = URL.createObjectURL(blob);
+
+            const saved = 100 - (blob.size / file.size * 100);
+            p.infoDiv.textContent =
+                `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+
+            p.downloadLink.href = URL.createObjectURL(blob);
+            p.downloadLink.download = file.name;
+
+            worker.terminate(); // Worker nach Nutzung schließen
+            continue;
         }
+    }
+}
+
+if (ACTIVE === "png") {
+    // quantize(ctx, canvas.width, canvas.height, percent); // <-- alt
+    try {
+        const compressedBlob = await compressPngBlob(file, percent);
+        blob = compressedBlob.size >= file.size ? file : compressedBlob;
+    } catch (err) {
+        console.error("PNG compression failed:", err);
+        blob = file; // fallback
+    }
+} else {
+    let type = ACTIVE === "jpg" ? "image/jpeg" : "image/png";
+    let qualityValue = ACTIVE === "jpg" ? Math.min(0.99, percent / 100) : 1;
+    blob = await new Promise(r => canvas.toBlob(r, type, qualityValue));
+    if (blob.size >= file.size) blob = file;
+}
 
         let blob = await new Promise(r => canvas.toBlob(r, type, quality));
         if (blob.size >= file.size) blob = file;
