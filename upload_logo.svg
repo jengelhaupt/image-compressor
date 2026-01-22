@@ -17,7 +17,7 @@
 
       /* Animation für den Pfeil */
       .arrow {
-        animation: arrow-bounce 0.8s ease-out 1;
+        animation: arrow-bounce 0.8s ease-out 5;
         transform-origin: center;
       }
 
