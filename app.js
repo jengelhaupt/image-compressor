@@ -68,7 +68,7 @@ dropzone.ondrop = async e => {
 let pngWorker = null;
 function initPngWorker() {
     if (!pngWorker) {
-        pngWorker = new Worker("compress-png-workers.js", { type: "module" });
+        pngWorker = new Worker("compress-png-wokrers.js", { type: "module" });
     }
 }
 function compressPngBlob(file, quality = 256) {
