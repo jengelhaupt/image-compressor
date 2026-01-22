@@ -46,48 +46,31 @@ dropzone.onclick = () => fileInput.click();
 dropzone.ondragover = e => { e.preventDefault(); dropzone.classList.add("dragover"); };
 dropzone.ondragleave = () => dropzone.classList.remove("dragover");
 
+/* =========================
+   UPLOAD EVENTS
+========================= */
 fileInput.onchange = async e => {
     files = [...e.target.files];
     await prepareImages();
     await render();
-    requestAnimationFrame(() => preview.scrollIntoView({ behavior: "smooth" }));
+
+    requestAnimationFrame(() => {
+        preview.scrollIntoView({ behavior: "smooth" });
+    });
 };
 
 dropzone.ondrop = async e => {
     e.preventDefault();
     dropzone.classList.remove("dragover");
+
     files = [...e.dataTransfer.files];
     await prepareImages();
     await render();
-    requestAnimationFrame(() => preview.scrollIntoView({ behavior: "smooth" }));
-};
 
-/* =========================
-   WORKER INIT
-========================= */
-let pngWorker = null;
-function initPngWorker() {
-    if (!pngWorker) {
-        pngWorker = new Worker("compress-png-wokrers.js");
-    }
-}
-function compressPngBlob(file, quality = 256) {
-    return new Promise(async (resolve, reject) => {
-        initPngWorker();
-        const id = crypto.randomUUID();
-        const arrayBuffer = await file.arrayBuffer();
-
-        const handler = (e) => {
-            if (e.data.id !== id) return;
-            if (e.data.success) resolve(new Blob([e.data.data], { type: "image/png" }));
-            else reject(new Error(e.data.error));
-            pngWorker.removeEventListener("message", handler);
-        };
-
-        pngWorker.addEventListener("message", handler);
-        pngWorker.postMessage({ type: "compress_png", id, data: arrayBuffer, quality }, [arrayBuffer]);
+    requestAnimationFrame(() => {
+        preview.scrollIntoView({ behavior: "smooth" });
     });
-}
+};
 
 /* =========================
    PREPARE IMAGES
@@ -127,6 +110,21 @@ async function prepareImages() {
 }
 
 /* =========================
+   PNG QUANTIZE
+========================= */
+function quantize(ctx, w, h, colors) {
+    const img = ctx.getImageData(0, 0, w, h);
+    const d = img.data;
+    const step = Math.max(1, Math.floor(256 / Math.cbrt(colors)));
+    for (let i = 0; i < d.length; i += 4) {
+        d[i]     = Math.floor(d[i]     / step) * step;
+        d[i + 1] = Math.floor(d[i + 1] / step) * step;
+        d[i + 2] = Math.floor(d[i + 2] / step) * step;
+    }
+    ctx.putImageData(img, 0, 0);
+}
+
+/* =========================
    RENDER
 ========================= */
 async function render() {
@@ -156,7 +154,7 @@ async function render() {
             continue;
         }
 
-        /* -------- WEBP -------- */
+        /* -------- WEBP CONVERT -------- */
         if (ACTIVE === "webp") {
             const canvas = document.createElement("canvas");
             canvas.width = img.width;
@@ -185,53 +183,42 @@ async function render() {
             continue;
         }
 
-        /* -------- JPG -------- */
-        if (ACTIVE === "jpg") {
-            const type = "image/jpeg";
-            const quality = Math.min(0.99, percent / 100);
-            const canvas = document.createElement("canvas");
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0);
-
-            let blob = await new Promise(r => canvas.toBlob(r, type, quality));
-            if (blob.size >= file.size) blob = file;
-
-            zipFiles.push({ name: file.name, blob });
-            p.compressedImg.src = URL.createObjectURL(blob);
-
-            const saved = 100 - (blob.size / file.size * 100);
+        /* -------- JPG / PNG -------- */
+        if (percent >= 100) {
+            zipFiles.push({ name: file.name, blob: file });
+            p.compressedImg.src = URL.createObjectURL(file);
             p.infoDiv.textContent =
-                `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-
-            p.downloadLink.href = URL.createObjectURL(blob);
+                `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(file.size/1024).toFixed(1)} KB (0%)`;
+            p.downloadLink.href = URL.createObjectURL(file);
             p.downloadLink.download = file.name;
             continue;
         }
 
-        /* -------- PNG via Worker -------- */
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+
+        let type = ACTIVE === "jpg" ? "image/jpeg" : "image/png";
+        let quality = ACTIVE === "jpg" ? Math.min(0.99, percent / 100) : 1;
+
         if (ACTIVE === "png") {
-            let blob;
-            try {
-                const compressedBlob = await compressPngBlob(file, percent);
-                blob = compressedBlob.size >= file.size ? file : compressedBlob;
-            } catch (err) {
-                console.error("PNG compression failed:", err);
-                blob = file; // fallback
-            }
-
-            zipFiles.push({ name: file.name, blob });
-            p.compressedImg.src = URL.createObjectURL(blob);
-
-            const saved = 100 - (blob.size / file.size * 100);
-            p.infoDiv.textContent =
-                `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-
-            p.downloadLink.href = URL.createObjectURL(blob);
-            p.downloadLink.download = file.name;
-            continue;
+            quantize(ctx, canvas.width, canvas.height, percent);
         }
+
+        let blob = await new Promise(r => canvas.toBlob(r, type, quality));
+        if (blob.size >= file.size) blob = file;
+
+        zipFiles.push({ name: file.name, blob });
+        p.compressedImg.src = URL.createObjectURL(blob);
+
+        const saved = 100 - (blob.size / file.size * 100);
+        p.infoDiv.textContent =
+            `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+
+        p.downloadLink.href = URL.createObjectURL(blob);
+        p.downloadLink.download = file.name;
     }
 }
 
