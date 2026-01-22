@@ -1,9 +1,9 @@
-/* compress-png-worker.js - klassischer Worker */
+// compress-png-wokrers.js
 
-importScripts('libs/image-q.min.js'); // <-- Pfad zu deiner lokalen Kopie von image-q
+importScripts('https://cdn.jsdelivr.net/npm/image-q@1.1.0/dist/image-q.min.js');
 
-self.onmessage = async function(e) {
-    const { file, colors = 256 } = e.data;
+self.onmessage = async (e) => {
+    const { file, colors } = e.data;
 
     try {
         const arrayBuffer = await file.arrayBuffer();
@@ -15,24 +15,18 @@ self.onmessage = async function(e) {
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0);
 
-            // image-q nutzt RGBA-Array
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const pointContainer = iq.utils.PointContainer.fromImageData(imageData);
-
+            // quantize über image-q
+            const iq = self.IQ; // <--- UMD stellt IQ global bereit
+            const pointContainer = iq.utils.PointContainer.fromCanvas(canvas);
             const distance = new iq.distance.Euclidean();
-            const palette = iq.buildPalette(pointContainer, { colors, method: 2, distance });
-            const quantized = iq.applyPalette(pointContainer, palette, { method: 2, distance });
+            const palette = new iq.buildPalette(
+                pointContainer, { colors }
+            );
+            const quantized = iq.applyPalette(pointContainer, palette, distance);
+            const outCanvas = quantized.toCanvas();
 
-            const outData = quantized.toImageData();
-            ctx.putImageData(outData, 0, 0);
-
-            const blob = await canvas.convertToBlob({ type: 'image/png' });
-
+            const blob = await outCanvas.convertToBlob({ type: 'image/png' });
             self.postMessage(blob);
-        };
-
-        img.onerror = (err) => {
-            self.postMessage({ error: 'Failed to load image' });
         };
     } catch (err) {
         self.postMessage({ error: err.message });
