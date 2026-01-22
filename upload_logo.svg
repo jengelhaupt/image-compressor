@@ -1,36 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="Ebene_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 384">
-   <!-- Generator: Adobe Illustrator 29.7.1, SVG Export Plug-In . SVG Version: 2.1.1 Build 8)  -->
+<svg id="Ebene_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 384 384">
   <defs>
     <style>
-      .st0 {
-        fill: #00d80a;
-      }
-
-      .st1 {
-        fill: #85c2fe;
-      }
-
-      .st2 {
-        stroke-linejoin: round;
-      }
       .st0 { fill: #00d80a; }
       .st1 { fill: #85c2fe; }
 
       .st2, .st3 {
         fill: none;
-@@ -22,17 +13,31 @@
+        stroke: #fff;
+        stroke-linecap: round;
         stroke-width: 30.448px;
       }
 
-      .st3 {
-        stroke-miterlimit: 10;
       .st2 { stroke-linejoin: round; }
       .st3 { stroke-miterlimit: 10; }
 
       /* Animation für den Pfeil */
       .arrow {
-        animation: arrow-bounce 0.8s ease-out 3;
+        animation: arrow-bounce 0.8s ease-out 1;
         transform-origin: center;
       }
 
@@ -44,16 +31,12 @@
   </defs>
 
   <rect class="st0" x="13.5" y="26.129" width="359" height="333" rx="35.502" ry="35.502"/>
-  <polygon class="st1" points="-373.45 371.449 -374.95 371.449 -374.049 370.942 -373.45 371.449"/>
-  <polygon class="st1" points="-197.95 371.449 -199.45 371.449 -198.548 370.941 -197.95 371.449"/>
 
   <path class="st3" d="M93.794,229.536v49.824s-4.442,21.768,21.768,21.768h158.099s22.906-.976,22.906-22.906v-48.687"/>
-  <g>
 
   <!-- Pfeil -->
   <g class="arrow">
     <polyline class="st2" points="126.264 165.509 196.883 103.419 260.051 165.509"/>
     <line class="st2" x1="196.883" y1="103.419" x2="196.883" y2="237.117"/>
   </g>
-</svg>
 </svg>
