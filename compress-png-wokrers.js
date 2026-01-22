@@ -1,34 +1,42 @@
-// compress-png-wokrers.js
-
-importScripts('https://free-img-compressor.de/libs/image-q.min.js');
+// Lädt image-q lokal (liegt z.B. im /libs/ Ordner)
+importScripts('libs/image-q.min.js');
 
 self.onmessage = async (e) => {
-    const { file, colors } = e.data;
+    const { type, file, colors = 256 } = e.data;
 
-    try {
-        const arrayBuffer = await file.arrayBuffer();
-        const img = new Image();
-        img.src = URL.createObjectURL(file);
+    if (type === "compress_png") {
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const imgBitmap = await createImageBitmap(new Blob([arrayBuffer]));
 
-        img.onload = async () => {
-            const canvas = new OffscreenCanvas(img.width, img.height);
+            // Canvas erstellen
+            const canvas = new OffscreenCanvas(imgBitmap.width, imgBitmap.height);
             const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
+            ctx.drawImage(imgBitmap, 0, 0);
 
-            // quantize über image-q
-            const iq = self.IQ; // <--- UMD stellt IQ global bereit
-            const pointContainer = iq.utils.PointContainer.fromCanvas(canvas);
-            const distance = new iq.distance.Euclidean();
-            const palette = new iq.buildPalette(
-                pointContainer, { colors }
-            );
-            const quantized = iq.applyPalette(pointContainer, palette, distance);
-            const outCanvas = quantized.toCanvas();
+            // Pixel auslesen
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const rgbaArray = Array.from(imgData.data);
 
-            const blob = await outCanvas.convertToBlob({ type: 'image/png' });
-            self.postMessage(blob);
-        };
-    } catch (err) {
-        self.postMessage({ error: err.message });
+            // image-q Quantisierung
+            const iq = window.imageQ; // image-q sollte global verfügbar sein
+            const pointArray = iq.utils.PointContainer.fromUint8Array(imgData.data, canvas.width, canvas.height);
+            const distance = new iq.distance.EuclideanBT709NoAlpha();
+            const palette = iq.quantization.NeuralQuant.quantizeSync(pointArray, colors);
+            const dithered = iq.image.quantizeSync(pointArray, palette, distance);
+
+            // Zurück auf Canvas
+            const outData = new Uint8ClampedArray(dithered.toUint8Array());
+            const outImage = new ImageData(outData, canvas.width, canvas.height);
+            ctx.putImageData(outImage, 0, 0);
+
+            // Blob erzeugen
+            const outBlob = await canvas.convertToBlob({ type: 'image/png' });
+
+            self.postMessage(outBlob);
+        } catch (err) {
+            console.error("Worker PNG compression failed:", err);
+            self.postMessage(file); // fallback: Original zurückgeben
+        }
     }
 };
