@@ -254,30 +254,36 @@ async function render() {
 if (ACTIVE === "png") {
     const colors = Math.min(256, sliderToColors(percent));
 
+    // Optional: Dithering für schönere Gradients
     ditherFS(ctx, canvas.width, canvas.height, colors);
 
+    // ImageData aus Canvas holen
     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-    const png = UPNG.encode(
-        [imgData.data.buffer],
+    // Mit UPNG echte 8-Bit Indexed PNG erzeugen
+    const pngBuffer = UPNG.encode(
+        [imgData.data.buffer], // Array von RGBA-Puffer
         canvas.width,
         canvas.height,
         colors
     );
 
-    const blob = new Blob([png], { type: "image/png" });
+    const blob = new Blob([pngBuffer], { type: "image/png" });
 
-    zipFiles.push({ name: file.name, blob });
+    // Preview aktualisieren
     p.compressedImg.src = URL.createObjectURL(blob);
 
+    // Info aktualisieren
     const saved = 100 - (blob.size / file.size * 100);
     p.infoDiv.textContent =
         `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
 
+    // Download-Link setzen
     p.downloadLink.href = URL.createObjectURL(blob);
     p.downloadLink.download = file.name;
 
-    continue;
+    // Schleife über Bilder korrekt fortsetzen
+    continue; // <-- hier bleibt die Schleife sauber
 }
 
 /* =========================
