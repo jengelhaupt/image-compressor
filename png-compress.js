@@ -151,7 +151,7 @@ function ditherFS(ctx, w, h, colors) {
 }
 
 /* =========================
-   RENDER PNG - STUFENWEISE KOMPRESSIEREN (QUALITÄT)
+   RENDER PNG - STUFENWEISE KOMPRESSIEREN
 ========================= */
 async function render() {
     zipFiles = [];
@@ -168,33 +168,25 @@ async function render() {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
 
-        // Stufenweise Kompression: Schrittweise Qualitätsreduktion
-        let step = 100;
-        let savedBlob = null;
+        // In dieser Version verwenden wir den Qualitätsregler direkt.
+        const quality = Math.min(0.99, percent / 100);  // Qualität von 0 bis 1 (100% bis 1%)
+        
+        // Wenden wir die Quantisierung oder Dithering an
+        quantizeSimple(ctx, canvas.width, canvas.height, percent);  // Optional: ditherFS statt quantizeSimple
 
-        while (step > 10) {  // Hier definierst du die minimale Qualitätsstufe (z.B. 10%)
-            let quality = step / 100;
+        // Generiere das Blob basierend auf der Qualitätsstufe
+        let blob = await new Promise((r) => canvas.toBlob(r, "image/png", quality));
 
-            // Wenden wir die Quantisierung an (oder Dithering, je nachdem)
-            quantizeSimple(ctx, canvas.width, canvas.height, percent);
-
-            let blob = await new Promise((r) => canvas.toBlob(r, "image/png", quality));
-            if (savedBlob && blob.size >= savedBlob.size) {
-                break; // Wenn die Qualität gleich oder schlechter wird, stoppen wir
-            }
-
-            savedBlob = blob;
-
-            zipFiles.push({ name: file.name, blob });
-            p.compressedImg.src = URL.createObjectURL(blob);
-
-            const saved = 100 - (blob.size / file.size) * 100;
-            p.infoDiv.textContent = `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-
-            step -= 10;  // Reduziere die Qualität in Schritten von 10%
+        if (blob.size >= file.size) {
+            blob = file;  // Wenn die Qualität das Bild vergrößert, verwenden wir die Originaldatei
         }
 
-        p.downloadLink.href = URL.createObjectURL(savedBlob);
+        zipFiles.push({ name: file.name, blob });
+        p.compressedImg.src = URL.createObjectURL(blob);
+
+        const saved = 100 - (blob.size / file.size) * 100;
+        p.infoDiv.textContent = `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+        p.downloadLink.href = URL.createObjectURL(blob);
         p.downloadLink.download = file.name;
     }
 }
