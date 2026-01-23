@@ -77,7 +77,7 @@ dropzone.ondrop = async (e) => {
 /* =========================
    PREPARE IMAGES
 ========================= */
-async function prepareImages() {
+aasync function prepareImages() {
     originalImages = await Promise.all(
         files.map(
             (file) =>
@@ -92,6 +92,10 @@ async function prepareImages() {
 
     preview.innerHTML = "";
     previewItems = [];
+
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightboxImg");
+    const lightboxClose = document.getElementById("lightboxClose");
 
     originalImages.forEach((item) => {
         const container = document.createElement("div");
@@ -112,28 +116,20 @@ async function prepareImages() {
         container.append(origImg, compressedImg, infoDiv, downloadLink);
         preview.appendChild(container);
 
+        // Lightbox-Klick nur hier definieren
+        compressedImg.onclick = () => {
+            lightboxImg.src = compressedImg.src; // Zeigt komprimiertes Bild
+            lightbox.classList.remove("hidden");
+        };
+
         previewItems.push({ origImg, compressedImg, infoDiv, downloadLink });
     });
 
-   const lightbox = document.getElementById("lightbox");
-const lightboxImg = document.getElementById("lightboxImg");
-const lightboxClose = document.getElementById("lightboxClose");
-
-// Bei jedem Preview-Item hinzufügen
-previewItems.push({ origImg, compressedImg, infoDiv, downloadLink });
-
-// Klick auf Vorschaubild öffnet das Lightbox-Overlay
-compressedImg.onclick = () => {
-    lightboxImg.src = compressedImg.src; // Zeigt komprimiertes Bild
-    lightbox.classList.remove("hidden");
-};
-
-// Overlay schließen
-lightboxClose.onclick = () => lightbox.classList.add("hidden");
-lightbox.onclick = (e) => {
-    if (e.target === lightbox) lightbox.classList.add("hidden");
-};
-
+    // Overlay schließen (einmal für alle)
+    lightboxClose.onclick = () => lightbox.classList.add("hidden");
+    lightbox.onclick = (e) => {
+        if (e.target === lightbox) lightbox.classList.add("hidden");
+    };
 }
 
 /* =========================
