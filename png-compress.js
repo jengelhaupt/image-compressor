@@ -96,134 +96,62 @@ async function prepareImages() {
 }
 
 /* =========================
-   MEDIAN CUT ALGORITHMUS
+   PNG QUANTIZE & DITHER
 ========================= */
-function medianCutQuantize(imageData, maxColors = 256) {
-    let pixels = [];
-    const data = imageData.data;
+function quantizeSimple(ctx, w, h, colors) {
+    const img = ctx.getImageData(0, 0, w, h);
+    const d = img.data;
+    const levels = Math.round(Math.cbrt(colors));
+    const step = 255 / (levels - 1);
 
-    // Speichere alle RGB-Werte als Pixelobjekte
-    for (let i = 0; i < data.length; i += 4) {
-        pixels.push({
-            r: data[i],
-            g: data[i + 1],
-            b: data[i + 2]
-        });
+    for (let i = 0; i < d.length; i += 4) {
+        d[i] = Math.round(d[i] / step) * step;
+        d[i + 1] = Math.round(d[i + 1] / step) * step;
+        d[i + 2] = Math.round(d[i + 2] / step) * step;
     }
 
-    // Führe den Median Cut Algorithmus aus, um die Farbpalette zu reduzieren
-    const colorPalette = medianCut(pixels, maxColors);
-
-    // Ersetze jede Farbe im Bild durch die nächstgelegene Farbe in der reduzierten Palette
-    for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-
-        const closestColor = findClosestColor(r, g, b, colorPalette);
-
-        data[i] = closestColor.r;
-        data[i + 1] = closestColor.g;
-        data[i + 2] = closestColor.b;
-    }
-
-    return imageData;
+    ctx.putImageData(img, 0, 0);
 }
 
-// Median Cut Algorithmus
-function medianCut(pixels, maxColors) {
-    let cubes = [pixels];
-    let palette = [];
+function ditherFS(ctx, w, h, colors) {
+    const img = ctx.getImageData(0, 0, w, h);
+    const d = img.data;
+    const levels = Math.round(Math.cbrt(colors));
+    const step = 255 / (levels - 1);
 
-    while (cubes.length < maxColors) {
-        // Zerlege die Farbwürfel weiter, bis wir maxColors erreicht haben
-        let maxVarianceCube = findMaxVarianceCube(cubes);
-        cubes = splitCube(maxVarianceCube, cubes);
+    function q(v) {
+        return Math.round(v / step) * step;
     }
 
-    // Berechne die Durchschnittsfarbe jedes Würfels
-    cubes.forEach(cube => {
-        let avgColor = calculateAverageColor(cube);
-        palette.push(avgColor);
-    });
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const i = (y * w + x) * 4;
+            for (let c = 0; c < 3; c++) {
+                const old = d[i + c];
+                const neu = q(old);
+                const err = old - neu;
+                d[i + c] = neu;
 
-    return palette;
-}
+                const spread = (dx, dy, f) => {
+                    const ni = ((y + dy) * w + (x + dx)) * 4 + c;
+                    if (ni >= 0 && ni < d.length) {
+                        d[ni] += err * f;
+                    }
+                };
 
-// Finde den Würfel mit der größten Farbabweichung (maximale Breite)
-function findMaxVarianceCube(cubes) {
-    let maxVariance = -1;
-    let maxCube = null;
-
-    cubes.forEach(cube => {
-        const variance = calculateVariance(cube);
-        if (variance > maxVariance) {
-            maxVariance = variance;
-            maxCube = cube;
+                spread(1, 0, 7 / 16);
+                spread(-1, 1, 3 / 16);
+                spread(0, 1, 5 / 16);
+                spread(1, 1, 1 / 16);
+            }
         }
-    });
+    }
 
-    return maxCube;
-}
-
-// Berechne die Farbabweichung (Varianz) eines Würfels
-function calculateVariance(cube) {
-    let rVariance = 0;
-    let gVariance = 0;
-    let bVariance = 0;
-
-    cube.forEach(pixel => {
-        rVariance += Math.pow(pixel.r - mean(cube, 'r'), 2);
-        gVariance += Math.pow(pixel.g - mean(cube, 'g'), 2);
-        bVariance += Math.pow(pixel.b - mean(cube, 'b'), 2);
-    });
-
-    return rVariance + gVariance + bVariance;
-}
-
-// Berechne den Durchschnittswert einer Komponente (r, g oder b)
-function mean(cube, channel) {
-    let sum = 0;
-    cube.forEach(pixel => sum += pixel[channel]);
-    return sum / cube.length;
-}
-
-// Splitte einen Würfel basierend auf der größten Farbabweichung
-function splitCube(cube, cubes) {
-    let sorted = cube.sort((a, b) => a.r - b.r);
-    let median = Math.floor(sorted.length / 2);
-    return [sorted.slice(0, median), sorted.slice(median)];
-}
-
-// Berechne die Durchschnittsfarbe eines Würfels
-function calculateAverageColor(cube) {
-    let r = 0, g = 0, b = 0;
-    cube.forEach(pixel => {
-        r += pixel.r;
-        g += pixel.g;
-        b += pixel.b;
-    });
-    return { r: Math.round(r / cube.length), g: Math.round(g / cube.length), b: Math.round(b / cube.length) };
-}
-
-// Finde die nächstgelegene Farbe aus der Palette
-function findClosestColor(r, g, b, palette) {
-    let minDist = Infinity;
-    let closestColor = null;
-
-    palette.forEach(color => {
-        const dist = Math.pow(color.r - r, 2) + Math.pow(color.g - g, 2) + Math.pow(color.b - b, 2);
-        if (dist < minDist) {
-            minDist = dist;
-            closestColor = color;
-        }
-    });
-
-    return closestColor;
+    ctx.putImageData(img, 0, 0);
 }
 
 /* =========================
-   RENDER PNG-8 - KOMPRESSIEREN UND QUALITÄT
+   RENDER PNG - STUFENWEISE KOMPRESSIEREN (QUALITÄT)
 ========================= */
 async function render() {
     zipFiles = [];
@@ -240,29 +168,33 @@ async function render() {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
 
-        // Holen wir uns die Bilddaten
-        let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        // Stufenweise Kompression: Schrittweise Qualitätsreduktion
+        let step = 100;
+        let savedBlob = null;
 
-        // Wenden wir die Median Cut Farbreduktion an
-        imageData = medianCutQuantize(imageData, 256);
+        while (step > 10) {  // Hier definierst du die minimale Qualitätsstufe (z.B. 10%)
+            let quality = step / 100;
 
-        ctx.putImageData(imageData, 0, 0);
+            // Wenden wir die Quantisierung an (oder Dithering, je nachdem)
+            quantizeSimple(ctx, canvas.width, canvas.height, percent);
 
-        // PNG-8 Konvertierung mit reduzierter Farbpalette und Qualität
-        let quality = Math.min(0.99, percent / 100);  // Qualität von 0 bis 1 (100% bis 1%)
+            let blob = await new Promise((r) => canvas.toBlob(r, "image/png", quality));
+            if (savedBlob && blob.size >= savedBlob.size) {
+                break; // Wenn die Qualität gleich oder schlechter wird, stoppen wir
+            }
 
-        let blob = await new Promise((r) => canvas.toBlob(r, "image/png", quality));
+            savedBlob = blob;
 
-        if (blob.size >= file.size) {
-            blob = file;  // Wenn die Qualität das Bild vergrößert, verwenden wir die Originaldatei
+            zipFiles.push({ name: file.name, blob });
+            p.compressedImg.src = URL.createObjectURL(blob);
+
+            const saved = 100 - (blob.size / file.size) * 100;
+            p.infoDiv.textContent = `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+
+            step -= 1;  // Reduziere die Qualität in Schritten von 1%
         }
 
-        zipFiles.push({ name: file.name, blob });
-        p.compressedImg.src = URL.createObjectURL(blob);
-
-        const saved = 100 - (blob.size / file.size) * 100;
-        p.infoDiv.textContent = `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-        p.downloadLink.href = URL.createObjectURL(blob);
+        p.downloadLink.href = URL.createObjectURL(savedBlob);
         p.downloadLink.download = file.name;
     }
 }
