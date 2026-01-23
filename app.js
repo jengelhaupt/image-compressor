@@ -112,6 +112,11 @@ async function prepareImages() {
 /* =========================
    PNG QUANTIZE
 ========================= */
+
+function sliderToColors(v) {
+    return Math.max(8, Math.round((v / 100) ** 2 * 256));
+}
+
 function quantizeSimple(ctx, w, h, colors) {
     const img = ctx.getImageData(0, 0, w, h);
     const d = img.data;
@@ -247,7 +252,8 @@ async function render() {
         let quality = ACTIVE === "jpg" ? Math.min(0.99, percent / 100) : 1;
 
          if (ACTIVE === "png") {
-          ditherFS(ctx, canvas.width, canvas.height, percent);
+       const colors = sliderToColors(percent);
+       ditherFS(ctx, canvas.width, canvas.height, colors);
          }
 
         let blob = await new Promise(r => canvas.toBlob(r, type, quality));
