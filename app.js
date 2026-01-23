@@ -210,49 +210,78 @@ async function render() {
 
         let type = ACTIVE === "jpg" ? "image/jpeg" : "image/png";
         let quality = ACTIVE === "jpg" ? Math.min(0.99, percent / 100) : 1;
+       
 
         /* -------- PNG 8-BIT DITHER + UPNG -------- */
-        if (ACTIVE === "png") {
-            const colors = Math.min(256, sliderToColors(percent));
-            const ctx = canvas.getContext("2d", { willReadFrequently: true });
-            ctx.drawImage(img, 0, 0);
+if (ACTIVE === "png") {
+    const colors = Math.min(256, sliderToColors(percent));
 
-            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            ditherFS(imgData, canvas.width, canvas.height, colors);
-            const d = imgData.data;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0);
 
-            const paletteMap = {};
-            const palette = [];
-            const indexedPixels = new Uint8Array(canvas.width * canvas.height);
+    // Canvas-Daten auslesen
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-            for (let y = 0; y < canvas.height; y++) {
-                for (let x = 0; x < canvas.width; x++) {
-                    const i = (y * canvas.width + x) * 4;
-                    const key = `${d[i]},${d[i+1]},${d[i+2]},${d[i+3]}`;
-                    let idx = paletteMap[key];
-                    if (idx === undefined) {
-                        idx = palette.length / 4;
-                        paletteMap[key] = idx;
-                        palette.push(d[i], d[i+1], d[i+2], d[i+3]);
+    // Dithering anwenden
+    ditherFS(imgData, canvas.width, canvas.height, colors);
+
+    const d = imgData.data;
+
+    // Palette-Map
+    const paletteMap = {};
+    const palette = [];
+    const indexedPixels = new Uint8Array(canvas.width * canvas.height);
+
+    let paletteIndex = 0;
+
+    for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+            const i = (y * canvas.width + x) * 4;
+            const r = d[i], g = d[i + 1], b = d[i + 2], a = d[i + 3];
+            const key = `${r},${g},${b},${a}`;
+
+            if (paletteMap[key] === undefined) {
+                if (paletteIndex >= colors) {
+                    // Palette voll: fallback auf nächsten existierenden Index (kürzeste Distanz)
+                    let minDist = Infinity, nearest = 0;
+                    for (let j = 0; j < palette.length; j += 4) {
+                        const dr = r - palette[j];
+                        const dg = g - palette[j+1];
+                        const db = b - palette[j+2];
+                        const da = a - palette[j+3];
+                        const dist = dr*dr + dg*dg + db*db + da*da;
+                        if (dist < minDist) {
+                            minDist = dist;
+                            nearest = j / 4;
+                        }
                     }
-                    indexedPixels[y * canvas.width + x] = idx;
+                    indexedPixels[y * canvas.width + x] = nearest;
+                    continue;
                 }
+                paletteMap[key] = paletteIndex;
+                palette.push(r, g, b, a);
+                paletteIndex++;
             }
 
-            const pngBuffer = UPNG.encode([indexedPixels.buffer], canvas.width, canvas.height, 8, palette);
-            const blob = new Blob([pngBuffer], { type: "image/png" });
-
-            zipFiles.push({ name: file.name, blob });
-            p.compressedImg.src = URL.createObjectURL(blob);
-
-            const saved = 100 - (blob.size / file.size * 100);
-            p.infoDiv.textContent =
-                `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-
-            p.downloadLink.href = URL.createObjectURL(blob);
-            p.downloadLink.download = file.name;
-            continue;
+            indexedPixels[y * canvas.width + x] = paletteMap[key];
         }
+    }
+
+    // UPNG-Buffer erstellen
+    const pngBuffer = UPNG.encode([indexedPixels], canvas.width, canvas.height, 8, palette);
+    const blob = new Blob([pngBuffer], { type: "image/png" });
+
+    zipFiles.push({ name: file.name, blob });
+    p.compressedImg.src = URL.createObjectURL(blob);
+
+    const saved = 100 - (blob.size / file.size * 100);
+    p.infoDiv.textContent = `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+
+    p.downloadLink.href = URL.createObjectURL(blob);
+    p.downloadLink.download = file.name;
+
+    continue;
+}
 
         /* -------- JPG -------- */
         if (ACTIVE === "jpg") {
