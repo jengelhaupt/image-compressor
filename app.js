@@ -77,7 +77,7 @@ dropzone.ondrop = async (e) => {
 /* =========================
    PREPARE IMAGES
 ========================= */
-aasync function prepareImages() {
+async function prepareImages() {
     originalImages = await Promise.all(
         files.map(
             (file) =>
@@ -92,10 +92,6 @@ aasync function prepareImages() {
 
     preview.innerHTML = "";
     previewItems = [];
-
-    const lightbox = document.getElementById("lightbox");
-    const lightboxImg = document.getElementById("lightboxImg");
-    const lightboxClose = document.getElementById("lightboxClose");
 
     originalImages.forEach((item) => {
         const container = document.createElement("div");
@@ -116,20 +112,8 @@ aasync function prepareImages() {
         container.append(origImg, compressedImg, infoDiv, downloadLink);
         preview.appendChild(container);
 
-        // Lightbox-Klick nur hier definieren
-        compressedImg.onclick = () => {
-            lightboxImg.src = compressedImg.src; // Zeigt komprimiertes Bild
-            lightbox.classList.remove("hidden");
-        };
-
         previewItems.push({ origImg, compressedImg, infoDiv, downloadLink });
     });
-
-    // Overlay schließen (einmal für alle)
-    lightboxClose.onclick = () => lightbox.classList.add("hidden");
-    lightbox.onclick = (e) => {
-        if (e.target === lightbox) lightbox.classList.add("hidden");
-    };
 }
 
 /* =========================
