@@ -115,10 +115,8 @@ function sliderToColors(v) {
     return Math.max(8, Math.round((v / 100) ** 2 * 256));
 }
 
-function ditherFS(ctx, w, h, colors) {
-    const img = ctx.getImageData(0, 0, w, h);
-    const d = img.data;
-
+function ditherFS(imgData, w, h, colors) {
+    const d = imgData.data;
     const levels = Math.round(Math.cbrt(colors));
     const step = 255 / (levels - 1);
 
@@ -129,7 +127,6 @@ function ditherFS(ctx, w, h, colors) {
     for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
             const i = (y * w + x) * 4;
-
             for (let c = 0; c < 3; c++) {
                 const old = d[i + c];
                 const neu = q(old);
@@ -150,6 +147,7 @@ function ditherFS(ctx, w, h, colors) {
             }
         }
     }
+}
 
     ctx.putImageData(img, 0, 0);
 }
@@ -236,12 +234,14 @@ async function render() {
 if (ACTIVE === "png") {
     const colors = Math.min(256, sliderToColors(percent));
 
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    ctx.drawImage(img, 0, 0);
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0);
 
-    ditherFS(ctx, canvas.width, canvas.height, colors);
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-    const d = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      ditherFS(imgData, canvas.width, canvas.height, colors);
+
+      const d = imgData.data;
 
     const paletteMap = {};
     const palette = [];
