@@ -51,7 +51,6 @@ fileInput.onchange = async e => {
     files = [...e.target.files];
     await prepareImages();
     await render();
-
     requestAnimationFrame(() => {
         preview.scrollIntoView({ behavior: "smooth" });
     });
@@ -60,11 +59,9 @@ fileInput.onchange = async e => {
 dropzone.ondrop = async e => {
     e.preventDefault();
     dropzone.classList.remove("dragover");
-
     files = [...e.dataTransfer.files];
     await prepareImages();
     await render();
-
     requestAnimationFrame(() => {
         preview.scrollIntoView({ behavior: "smooth" });
     });
@@ -92,7 +89,6 @@ async function prepareImages() {
         origImg.src = URL.createObjectURL(item.file);
 
         const compressedImg = document.createElement("img");
-
         const infoDiv = document.createElement("div");
         infoDiv.className = "info";
 
@@ -108,9 +104,8 @@ async function prepareImages() {
 }
 
 /* =========================
-   PNG QUANTIZE
+   PNG QUANTIZE / DITHER
 ========================= */
-
 function sliderToColors(v) {
     return Math.max(8, Math.round((v / 100) ** 2 * 256));
 }
@@ -120,9 +115,7 @@ function ditherFS(imgData, w, h, colors) {
     const levels = Math.round(Math.cbrt(colors));
     const step = 255 / (levels - 1);
 
-    function q(v) {
-        return Math.round(v / step) * step;
-    }
+    function q(v) { return Math.round(v / step) * step; }
 
     for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
@@ -135,9 +128,7 @@ function ditherFS(imgData, w, h, colors) {
 
                 const spread = (dx, dy, f) => {
                     const ni = ((y + dy) * w + (x + dx)) * 4 + c;
-                    if (ni >= 0 && ni < d.length) {
-                        d[ni] += err * f;
-                    }
+                    if (ni >= 0 && ni < d.length) d[ni] += err * f;
                 };
 
                 spread(1, 0, 7/16);
@@ -147,9 +138,6 @@ function ditherFS(imgData, w, h, colors) {
             }
         }
     }
-}
-
-    ctx.putImageData(img, 0, 0);
 }
 
 /* =========================
@@ -169,7 +157,6 @@ async function render() {
             const bytes = await file.arrayBuffer();
             const pdf = await PDFLib.PDFDocument.load(bytes);
             const outBytes = await pdf.save({ compress: true });
-
             const blob = new Blob([outBytes]);
             zipFiles.push({ name: file.name, blob });
 
@@ -191,24 +178,21 @@ async function render() {
 
             const quality = Math.min(0.99, percent / 100);
             let blob = await new Promise(r => canvas.toBlob(r, "image/webp", quality));
-
             if (blob.size >= file.size) blob = file;
 
             const newName = file.name.replace(/\.(jpg|jpeg|png|webp)$/i, ".webp");
-
             zipFiles.push({ name: newName, blob });
             p.compressedImg.src = URL.createObjectURL(blob);
 
             const saved = 100 - (blob.size / file.size * 100);
             p.infoDiv.textContent =
                 `Original ${(file.size/1024).toFixed(1)} KB → WebP ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-
             p.downloadLink.href = URL.createObjectURL(blob);
             p.downloadLink.download = newName;
             continue;
         }
 
-         /* -------- JPG / PNG (keine Kompression) -------- */
+        /* -------- JPG / PNG ohne Kompression -------- */
         if (percent >= 100) {
             zipFiles.push({ name: file.name, blob: file });
             p.compressedImg.src = URL.createObjectURL(file);
@@ -223,69 +207,67 @@ async function render() {
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
 
         let type = ACTIVE === "jpg" ? "image/jpeg" : "image/png";
         let quality = ACTIVE === "jpg" ? Math.min(0.99, percent / 100) : 1;
 
-        /* -------- PNG mit UPNG -------- */
-       
-if (ACTIVE === "png") {
-    const colors = Math.min(256, sliderToColors(percent));
+        /* -------- PNG 8-BIT DITHER + UPNG -------- */
+        if (ACTIVE === "png") {
+            const colors = Math.min(256, sliderToColors(percent));
+            const ctx = canvas.getContext("2d", { willReadFrequently: true });
+            ctx.drawImage(img, 0, 0);
 
-      const ctx = canvas.getContext("2d", { willReadFrequently: true });
-      ctx.drawImage(img, 0, 0);
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            ditherFS(imgData, canvas.width, canvas.height, colors);
+            const d = imgData.data;
 
-      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const paletteMap = {};
+            const palette = [];
+            const indexedPixels = new Uint8Array(canvas.width * canvas.height);
 
-      ditherFS(imgData, canvas.width, canvas.height, colors);
-
-      const d = imgData.data;
-
-    const paletteMap = {};
-    const palette = [];
-    const indexedPixels = new Uint8Array(canvas.width * canvas.height);
-
-    for (let y = 0; y < canvas.height; y++) {
-        for (let x = 0; x < canvas.width; x++) {
-            const i = (y * canvas.width + x) * 4;
-            const key = `${d[i]},${d[i+1]},${d[i+2]},${d[i+3]}`;
-            let idx = paletteMap[key];
-            if (idx === undefined) {
-                idx = palette.length;
-                paletteMap[key] = idx;
-                palette.push(d[i], d[i+1], d[i+2], d[i+3]);
+            for (let y = 0; y < canvas.height; y++) {
+                for (let x = 0; x < canvas.width; x++) {
+                    const i = (y * canvas.width + x) * 4;
+                    const key = `${d[i]},${d[i+1]},${d[i+2]},${d[i+3]}`;
+                    let idx = paletteMap[key];
+                    if (idx === undefined) {
+                        idx = palette.length / 4;
+                        paletteMap[key] = idx;
+                        palette.push(d[i], d[i+1], d[i+2], d[i+3]);
+                    }
+                    indexedPixels[y * canvas.width + x] = idx;
+                }
             }
-            indexedPixels[y * canvas.width + x] = idx;
+
+            const pngBuffer = UPNG.encode([indexedPixels.buffer], canvas.width, canvas.height, 8, palette);
+            const blob = new Blob([pngBuffer], { type: "image/png" });
+
+            zipFiles.push({ name: file.name, blob });
+            p.compressedImg.src = URL.createObjectURL(blob);
+
+            const saved = 100 - (blob.size / file.size * 100);
+            p.infoDiv.textContent =
+                `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+
+            p.downloadLink.href = URL.createObjectURL(blob);
+            p.downloadLink.download = file.name;
+            continue;
         }
-    }
-
-   const pngBuffer = UPNG.encode([indexedPixels], canvas.width, canvas.height, palette.length, palette, 0);
-    const blob = new Blob([pngBuffer], { type: "image/png" });
-
-    zipFiles.push({ name: file.name, blob });
-    p.compressedImg.src = URL.createObjectURL(blob);
-
-    const saved = 100 - (blob.size / file.size * 100);
-    p.infoDiv.textContent = `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-
-    p.downloadLink.href = URL.createObjectURL(blob);
-    p.downloadLink.download = file.name;
-
-    continue;
-}
 
         /* -------- JPG -------- */
         if (ACTIVE === "jpg") {
+            let ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
             let blob = await new Promise(r => canvas.toBlob(r, type, quality));
             if (blob.size >= file.size) blob = file;
 
             zipFiles.push({ name: file.name, blob });
             p.compressedImg.src = URL.createObjectURL(blob);
+
             const saved = 100 - (blob.size / file.size * 100);
             p.infoDiv.textContent =
-                `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+                `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(file.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+
             p.downloadLink.href = URL.createObjectURL(blob);
             p.downloadLink.download = file.name;
         }
