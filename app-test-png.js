@@ -119,6 +119,14 @@ async function prepareImages() {
 /* =========================
    PNG QUANTIZE
 ========================= */
+function sliderToColors(v) {
+    if (v < 25) return 8;
+    if (v < 50) return 32;
+    if (v < 75) return 64;
+    if (v < 90) return 128;
+    return 256;
+}
+
 function quantize(ctx, w, h, colors) {
     const img = ctx.getImageData(0, 0, w, h);
     const d = img.data;
@@ -208,35 +216,51 @@ async function render() {
         let quality = ACTIVE === "jpg" ? Math.min(0.99, percent / 100) : 1;
 
 if (ACTIVE === "png") {
-    // Schritt 1: Farben quantisieren
-    quantize(ctx, canvas.width, canvas.height, percent);
+    const colors = sliderToColors(percent);
 
-    // Schritt 2: PNG-8 Blob erzeugen mit UPNG.js
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0);
+
     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-    // max 256 Farben, RGBA
-    const png8ArrayBuffer = UPNG.encode([imgData.data.buffer], canvas.width, canvas.height, 256);
-    var blob = new Blob([png8ArrayBuffer], { type: "image/png" });
-} else {
-    // JPG oder normales PNG
-    let type = ACTIVE === "jpg" ? "image/jpeg" : "image/png";
-    let quality = ACTIVE === "jpg" ? Math.min(0.99, percent / 100) : 1;
-    blob = await new Promise((r) => canvas.toBlob(r, type, quality));
-}
+    // Dithering
+    ditherFS(imgData, canvas.width, canvas.height, colors);
 
-// Optional: nur ersetzen, wenn kleiner als Original
-if (blob.size >= file.size) blob = file;
+    const d = imgData.data;
 
-// Danach: ins ZIP und in die Vorschau
-zipFiles.push({ name: file.name, blob });
-p.compressedImg.src = URL.createObjectURL(blob);
+    // Palette erstellen
+    const paletteMap = {};
+    const palette = [];
+    const indexedPixels = new Uint8Array(canvas.width * canvas.height);
 
-const saved = 100 - (blob.size / file.size) * 100;
-p.infoDiv.textContent = `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-
-p.downloadLink.href = URL.createObjectURL(blob);
-p.downloadLink.download = file.name;
+    for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+            const i = (y * canvas.width + x) * 4;
+            const key = `${d[i]},${d[i+1]},${d[i+2]},${d[i+3]}`;
+            let idx = paletteMap[key];
+            if (idx === undefined) {
+                idx = palette.length / 4;
+                paletteMap[key] = idx;
+                palette.push(d[i], d[i+1], d[i+2], d[i+3]);
+            }
+            indexedPixels[y * canvas.width + x] = idx;
+        }
     }
+
+    // PNG mit UPNG erzeugen
+    const pngBuffer = UPNG.encode([indexedPixels], canvas.width, canvas.height, palette.length / 4, palette);
+    const blob = new Blob([pngBuffer], { type: "image/png" });
+
+    zipFiles.push({ name: file.name, blob });
+    p.compressedImg.src = URL.createObjectURL(blob);
+
+    const saved = 100 - (blob.size / file.size * 100);
+    p.infoDiv.textContent = `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+
+    p.downloadLink.href = URL.createObjectURL(blob);
+    p.downloadLink.download = file.name;
+    continue;
+}
 }
 
 /* =========================
