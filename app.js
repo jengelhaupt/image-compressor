@@ -248,19 +248,27 @@ async function render() {
         let quality = ACTIVE === "jpg" ? Math.min(0.99, percent / 100) : 1;
 
         /* -------- PNG mit UPNG -------- */
-if (ACTIVE === "png") {
+       
+       if (ACTIVE === "png") {
     const colors = Math.min(256, sliderToColors(percent));
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     ctx.drawImage(img, 0, 0);
+
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     ditherFS(ctx, canvas.width, canvas.height, colors);
-    const ditheredData = new Uint8Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer);
-    const pngBuffer = UPNG.encode([ditheredData], canvas.width, canvas.height, colors);
+    const dithered = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+    const { palette, indexedPixels } = quantize(dithered, colors);
+
+    const pngBuffer = UPNG.encode([indexedPixels], canvas.width, canvas.height, palette.length, palette);
     const blob = new Blob([pngBuffer], { type: "image/png" });
 
     zipFiles.push({ name: file.name, blob });
     p.compressedImg.src = URL.createObjectURL(blob);
+
     const saved = 100 - (blob.size / file.size * 100);
     p.infoDiv.textContent = `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+
     p.downloadLink.href = URL.createObjectURL(blob);
     p.downloadLink.download = file.name;
     continue;
