@@ -243,22 +243,23 @@ async function render() {
         let quality = ACTIVE === "jpg" ? Math.min(0.99, percent / 100) : 1;
 
         /* -------- PNG mit UPNG -------- */
-        if (ACTIVE === "png") {
-            const colors = Math.min(256, sliderToColors(percent));
-            ditherFS(ctx, canvas.width, canvas.height, colors);
-            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const pngBuffer = UPNG.encode([imgData.data.buffer], canvas.width, canvas.height, colors);
-            const blob = new Blob([pngBuffer], { type: "image/png" });
-
-            zipFiles.push({ name: file.name, blob });
-            p.compressedImg.src = URL.createObjectURL(blob);
-            const saved = 100 - (blob.size / file.size * 100);
-            p.infoDiv.textContent =
-                `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-            p.downloadLink.href = URL.createObjectURL(blob);
-            p.downloadLink.download = file.name;
-            continue;
-        }
+         if (ACTIVE === "png") {
+             const colors = Math.min(256, sliderToColors(percent));
+             const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+             ditherFS(ctx, canvas.width, canvas.height, colors);
+             const ditheredData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+             const pngBuffer = UPNG.encode([ditheredData.buffer], canvas.width, canvas.height, colors);
+            
+             const blob = new Blob([pngBuffer], { type: "image/png" });
+            
+             zipFiles.push({ name: file.name, blob });
+             p.compressedImg.src = URL.createObjectURL(blob);
+             const saved = 100 - (blob.size / file.size * 100);
+             p.infoDiv.textContent = `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+             p.downloadLink.href = URL.createObjectURL(blob);
+             p.downloadLink.download = file.name;
+          continue;
+}
 
         /* -------- JPG -------- */
         if (ACTIVE === "jpg") {
