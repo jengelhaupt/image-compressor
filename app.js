@@ -221,7 +221,7 @@ async function render() {
             continue;
         }
 
-        /* -------- JPG / PNG -------- */
+         /* -------- JPG / PNG (keine Kompression) -------- */
         if (percent >= 100) {
             zipFiles.push({ name: file.name, blob: file });
             p.compressedImg.src = URL.createObjectURL(file);
@@ -232,6 +232,7 @@ async function render() {
             continue;
         }
 
+        /* -------- CANVAS PREP -------- */
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;
@@ -241,22 +242,38 @@ async function render() {
         let type = ACTIVE === "jpg" ? "image/jpeg" : "image/png";
         let quality = ACTIVE === "jpg" ? Math.min(0.99, percent / 100) : 1;
 
-if (ACTIVE === "png") {
-    const colors = Math.min(256, sliderToColors(percent));
-    ditherFS(ctx, canvas.width, canvas.height, colors);
-    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const pngBuffer = UPNG.encode([imgData.data.buffer], canvas.width, canvas.height, colors);
-    const blob = new Blob([pngBuffer], { type: "image/png" });
-    
-    zipFiles.push({ name: file.name, blob });
-    p.compressedImg.src = URL.createObjectURL(blob);
-    const saved = 100 - (blob.size / file.size * 100);
-    p.infoDiv.textContent = `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-    p.downloadLink.href = URL.createObjectURL(blob);
-    p.downloadLink.download = file.name;
-    
-    continue;
-   }
+        /* -------- PNG mit UPNG -------- */
+        if (ACTIVE === "png") {
+            const colors = Math.min(256, sliderToColors(percent));
+            ditherFS(ctx, canvas.width, canvas.height, colors);
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pngBuffer = UPNG.encode([imgData.data.buffer], canvas.width, canvas.height, colors);
+            const blob = new Blob([pngBuffer], { type: "image/png" });
+
+            zipFiles.push({ name: file.name, blob });
+            p.compressedImg.src = URL.createObjectURL(blob);
+            const saved = 100 - (blob.size / file.size * 100);
+            p.infoDiv.textContent =
+                `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+            p.downloadLink.href = URL.createObjectURL(blob);
+            p.downloadLink.download = file.name;
+            continue;
+        }
+
+        /* -------- JPG -------- */
+        if (ACTIVE === "jpg") {
+            let blob = await new Promise(r => canvas.toBlob(r, type, quality));
+            if (blob.size >= file.size) blob = file;
+
+            zipFiles.push({ name: file.name, blob });
+            p.compressedImg.src = URL.createObjectURL(blob);
+            const saved = 100 - (blob.size / file.size * 100);
+            p.infoDiv.textContent =
+                `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+            p.downloadLink.href = URL.createObjectURL(blob);
+            p.downloadLink.download = file.name;
+        }
+    }
 }
 
 /* =========================
