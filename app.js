@@ -114,6 +114,26 @@ async function prepareImages() {
 
         previewItems.push({ origImg, compressedImg, infoDiv, downloadLink });
     });
+
+   const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightboxImg");
+const lightboxClose = document.getElementById("lightboxClose");
+
+// Bei jedem Preview-Item hinzufügen
+previewItems.push({ origImg, compressedImg, infoDiv, downloadLink });
+
+// Klick auf Vorschaubild öffnet das Lightbox-Overlay
+compressedImg.onclick = () => {
+    lightboxImg.src = compressedImg.src; // Zeigt komprimiertes Bild
+    lightbox.classList.remove("hidden");
+};
+
+// Overlay schließen
+lightboxClose.onclick = () => lightbox.classList.add("hidden");
+lightbox.onclick = (e) => {
+    if (e.target === lightbox) lightbox.classList.add("hidden");
+};
+
 }
 
 /* =========================
