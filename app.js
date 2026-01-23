@@ -242,8 +242,7 @@ async function render() {
         let quality = ACTIVE === "jpg" ? Math.min(0.99, percent / 100) : 1;
 
         if (ACTIVE === "png") {
-            ditherFS(ctx, canvas.width, canvas.height, percent);
-        }
+       ditherFS(ctx, canvas.width, canvas.height, percent);
 
         let blob = await new Promise(r => canvas.toBlob(r, type, quality));
         if (blob.size >= file.size) blob = file;
