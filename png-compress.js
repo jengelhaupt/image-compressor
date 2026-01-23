@@ -96,57 +96,130 @@ async function prepareImages() {
 }
 
 /* =========================
-   PNG-8 KONVERTIERUNG
+   MEDIAN CUT ALGORITHMUS
 ========================= */
-function quantizeToPNG8(imageData, width, height, maxColors = 256) {
-    const colorMap = new Map();
-    const colors = [];
+function medianCutQuantize(imageData, maxColors = 256) {
+    let pixels = [];
+    const data = imageData.data;
 
-    // Sammle alle Farben aus dem Bild
-    for (let i = 0; i < imageData.data.length; i += 4) {
-        const r = imageData.data[i];
-        const g = imageData.data[i + 1];
-        const b = imageData.data[i + 2];
-
-        const color = (r << 16) | (g << 8) | b;
-
-        if (!colorMap.has(color)) {
-            if (colors.length < maxColors) {
-                colors.push(color);
-                colorMap.set(color, true);
-            }
-        }
+    // Speichere alle RGB-Werte als Pixelobjekte
+    for (let i = 0; i < data.length; i += 4) {
+        pixels.push({
+            r: data[i],
+            g: data[i + 1],
+            b: data[i + 2]
+        });
     }
 
-    // Wenn mehr als maxColors, benutze eine Technik wie Median Cut oder K-Means (nicht implementiert hier)
-    // Das reduziert die Farben auf maxColors
+    // Führe den Median Cut Algorithmus aus, um die Farbpalette zu reduzieren
+    const colorPalette = medianCut(pixels, maxColors);
 
-    // Gehe durch das Bild und ersetze die Farben mit den nächstgelegenen Farben
-    for (let i = 0; i < imageData.data.length; i += 4) {
-        const r = imageData.data[i];
-        const g = imageData.data[i + 1];
-        const b = imageData.data[i + 2];
+    // Ersetze jede Farbe im Bild durch die nächstgelegene Farbe in der reduzierten Palette
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
 
-        let minDist = Infinity;
-        let closestColor = 0;
+        const closestColor = findClosestColor(r, g, b, colorPalette);
 
-        for (const color of colors) {
-            const cr = (color >> 16) & 0xFF;
-            const cg = (color >> 8) & 0xFF;
-            const cb = color & 0xFF;
-            const dist = (cr - r) ** 2 + (cg - g) ** 2 + (cb - b) ** 2;
-            if (dist < minDist) {
-                minDist = dist;
-                closestColor = color;
-            }
-        }
-
-        imageData.data[i] = (closestColor >> 16) & 0xFF;
-        imageData.data[i + 1] = (closestColor >> 8) & 0xFF;
-        imageData.data[i + 2] = closestColor & 0xFF;
+        data[i] = closestColor.r;
+        data[i + 1] = closestColor.g;
+        data[i + 2] = closestColor.b;
     }
 
     return imageData;
+}
+
+// Median Cut Algorithmus
+function medianCut(pixels, maxColors) {
+    let cubes = [pixels];
+    let palette = [];
+
+    while (cubes.length < maxColors) {
+        // Zerlege die Farbwürfel weiter, bis wir maxColors erreicht haben
+        let maxVarianceCube = findMaxVarianceCube(cubes);
+        cubes = splitCube(maxVarianceCube, cubes);
+    }
+
+    // Berechne die Durchschnittsfarbe jedes Würfels
+    cubes.forEach(cube => {
+        let avgColor = calculateAverageColor(cube);
+        palette.push(avgColor);
+    });
+
+    return palette;
+}
+
+// Finde den Würfel mit der größten Farbabweichung (maximale Breite)
+function findMaxVarianceCube(cubes) {
+    let maxVariance = -1;
+    let maxCube = null;
+
+    cubes.forEach(cube => {
+        const variance = calculateVariance(cube);
+        if (variance > maxVariance) {
+            maxVariance = variance;
+            maxCube = cube;
+        }
+    });
+
+    return maxCube;
+}
+
+// Berechne die Farbabweichung (Varianz) eines Würfels
+function calculateVariance(cube) {
+    let rVariance = 0;
+    let gVariance = 0;
+    let bVariance = 0;
+
+    cube.forEach(pixel => {
+        rVariance += Math.pow(pixel.r - mean(cube, 'r'), 2);
+        gVariance += Math.pow(pixel.g - mean(cube, 'g'), 2);
+        bVariance += Math.pow(pixel.b - mean(cube, 'b'), 2);
+    });
+
+    return rVariance + gVariance + bVariance;
+}
+
+// Berechne den Durchschnittswert einer Komponente (r, g oder b)
+function mean(cube, channel) {
+    let sum = 0;
+    cube.forEach(pixel => sum += pixel[channel]);
+    return sum / cube.length;
+}
+
+// Splitte einen Würfel basierend auf der größten Farbabweichung
+function splitCube(cube, cubes) {
+    let sorted = cube.sort((a, b) => a.r - b.r);
+    let median = Math.floor(sorted.length / 2);
+    return [sorted.slice(0, median), sorted.slice(median)];
+}
+
+// Berechne die Durchschnittsfarbe eines Würfels
+function calculateAverageColor(cube) {
+    let r = 0, g = 0, b = 0;
+    cube.forEach(pixel => {
+        r += pixel.r;
+        g += pixel.g;
+        b += pixel.b;
+    });
+    return { r: Math.round(r / cube.length), g: Math.round(g / cube.length), b: Math.round(b / cube.length) };
+}
+
+// Finde die nächstgelegene Farbe aus der Palette
+function findClosestColor(r, g, b, palette) {
+    let minDist = Infinity;
+    let closestColor = null;
+
+    palette.forEach(color => {
+        const dist = Math.pow(color.r - r, 2) + Math.pow(color.g - g, 2) + Math.pow(color.b - b, 2);
+        if (dist < minDist) {
+            minDist = dist;
+            closestColor = color;
+        }
+    });
+
+    return closestColor;
 }
 
 /* =========================
@@ -170,8 +243,8 @@ async function render() {
         // Holen wir uns die Bilddaten
         let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-        // Wenden wir die PNG-8-Quantisierung an
-        imageData = quantizeToPNG8(imageData, canvas.width, canvas.height, 256);
+        // Wenden wir die Median Cut Farbreduktion an
+        imageData = medianCutQuantize(imageData, 256);
 
         ctx.putImageData(imageData, 0, 0);
 
