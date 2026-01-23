@@ -110,6 +110,11 @@ async function prepareImages() {
 /* =========================
    PNG QUANTIZE
 ========================= */
+
+function sliderToColors(v) {
+    return Math.max(8, Math.round((v / 100) ** 2 * 256));
+}
+
 function quantizeSimple(ctx, w, h, colors) {
     const img = ctx.getImageData(0, 0, w, h);
     const d = img.data;
