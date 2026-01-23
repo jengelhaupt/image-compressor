@@ -112,15 +112,58 @@ async function prepareImages() {
 /* =========================
    PNG QUANTIZE
 ========================= */
-function quantize(ctx, w, h, colors) {
+function quantizeSimple(ctx, w, h, colors) {
     const img = ctx.getImageData(0, 0, w, h);
     const d = img.data;
-    const step = Math.max(1, Math.floor(256 / Math.cbrt(colors)));
+
+    const levels = Math.round(Math.cbrt(colors));
+    const step = 255 / (levels - 1);
+
     for (let i = 0; i < d.length; i += 4) {
-        d[i]     = Math.floor(d[i]     / step) * step;
-        d[i + 1] = Math.floor(d[i + 1] / step) * step;
-        d[i + 2] = Math.floor(d[i + 2] / step) * step;
+        d[i]     = Math.round(d[i]     / step) * step;
+        d[i + 1] = Math.round(d[i + 1] / step) * step;
+        d[i + 2] = Math.round(d[i + 2] / step) * step;
     }
+
+    ctx.putImageData(img, 0, 0);
+}
+
+function ditherFS(ctx, w, h, colors) {
+    const img = ctx.getImageData(0, 0, w, h);
+    const d = img.data;
+
+    const levels = Math.round(Math.cbrt(colors));
+    const step = 255 / (levels - 1);
+
+    function q(v) {
+        return Math.round(v / step) * step;
+    }
+
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const i = (y * w + x) * 4;
+
+            for (let c = 0; c < 3; c++) {
+                const old = d[i + c];
+                const neu = q(old);
+                const err = old - neu;
+                d[i + c] = neu;
+
+                const spread = (dx, dy, f) => {
+                    const ni = ((y + dy) * w + (x + dx)) * 4 + c;
+                    if (ni >= 0 && ni < d.length) {
+                        d[ni] += err * f;
+                    }
+                };
+
+                spread(1, 0, 7/16);
+                spread(-1, 1, 3/16);
+                spread(0, 1, 5/16);
+                spread(1, 1, 1/16);
+            }
+        }
+    }
+
     ctx.putImageData(img, 0, 0);
 }
 
@@ -203,9 +246,9 @@ async function render() {
         let type = ACTIVE === "jpg" ? "image/jpeg" : "image/png";
         let quality = ACTIVE === "jpg" ? Math.min(0.99, percent / 100) : 1;
 
-        if (ACTIVE === "png") {
-            quantize(ctx, canvas.width, canvas.height, percent);
-        }
+         if (ACTIVE === "png") {
+          ditherFS(ctx, canvas.width, canvas.height, percent);
+         }
 
         let blob = await new Promise(r => canvas.toBlob(r, type, quality));
         if (blob.size >= file.size) blob = file;
