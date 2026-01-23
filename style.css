@@ -111,26 +111,3 @@ input[type=range] {
 #breadcrumbs a:hover {
     text-decoration:underline;
 }
-
-#lightbox {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-#lightbox.hidden { display: none; }
-#lightbox img { max-width: 90%; max-height: 90%; border-radius: 8px; }
-#lightboxClose {
-    position: absolute;
-    top: 20px;
-    right: 40px;
-    font-size: 3rem;
-    color: white;
-    cursor: pointer;
-}
