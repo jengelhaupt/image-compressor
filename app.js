@@ -261,7 +261,7 @@ if (ACTIVE === "png") {
         }
     }
 
-    const pngBuffer = UPNG.encode([indexedPixels], canvas.width, canvas.height, palette.length, palette);
+   const pngBuffer = UPNG.encode([indexedPixels], canvas.width, canvas.height, palette.length, palette, 0);
     const blob = new Blob([pngBuffer], { type: "image/png" });
 
     zipFiles.push({ name: file.name, blob });
