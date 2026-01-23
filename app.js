@@ -251,10 +251,35 @@ async function render() {
         let type = ACTIVE === "jpg" ? "image/jpeg" : "image/png";
         let quality = ACTIVE === "jpg" ? Math.min(0.99, percent / 100) : 1;
 
-         if (ACTIVE === "png") {
-       const colors = sliderToColors(percent);
-       ditherFS(ctx, canvas.width, canvas.height, colors);
-         }
+if (ACTIVE === "png") {
+    const colors = Math.min(256, sliderToColors(percent));
+
+    // Für schöne Gradients behalten wir Dithering
+    ditherFS(ctx, canvas.width, canvas.height, colors);
+
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+    const png = UPNG.encode(
+        [imgData.data.buffer],
+        canvas.width,
+        canvas.height,
+        colors
+    );
+
+    const blob = new Blob([png], { type: "image/png" });
+
+    zipFiles.push({ name: file.name, blob });
+    p.compressedImg.src = URL.createObjectURL(blob);
+
+    const saved = 100 - (blob.size / file.size * 100);
+    p.infoDiv.textContent =
+        `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+
+    p.downloadLink.href = URL.createObjectURL(blob);
+    p.downloadLink.download = file.name;
+
+    continue; // 🚨 extrem wichtig
+}
 
         let blob = await new Promise(r => canvas.toBlob(r, type, quality));
         if (blob.size >= file.size) blob = file;
