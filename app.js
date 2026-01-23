@@ -115,22 +115,6 @@ function sliderToColors(v) {
     return Math.max(8, Math.round((v / 100) ** 2 * 256));
 }
 
-function quantizeSimple(ctx, w, h, colors) {
-    const img = ctx.getImageData(0, 0, w, h);
-    const d = img.data;
-
-    const levels = Math.round(Math.cbrt(colors));
-    const step = 255 / (levels - 1);
-
-    for (let i = 0; i < d.length; i += 4) {
-        d[i]     = Math.round(d[i] / step) * step;
-        d[i + 1] = Math.round(d[i + 1] / step) * step;
-        d[i + 2] = Math.round(d[i + 2] / step) * step;
-    }
-
-    ctx.putImageData(img, 0, 0);
-}
-
 function ditherFS(ctx, w, h, colors) {
     const img = ctx.getImageData(0, 0, w, h);
     const d = img.data;
@@ -249,16 +233,33 @@ async function render() {
 
         /* -------- PNG mit UPNG -------- */
        
-       if (ACTIVE === "png") {
+if (ACTIVE === "png") {
     const colors = Math.min(256, sliderToColors(percent));
+
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     ctx.drawImage(img, 0, 0);
 
-    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     ditherFS(ctx, canvas.width, canvas.height, colors);
-    const dithered = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
 
-    const { palette, indexedPixels } = quantize(dithered, colors);
+    const d = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+    const paletteMap = {};
+    const palette = [];
+    const indexedPixels = new Uint8Array(canvas.width * canvas.height);
+
+    for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+            const i = (y * canvas.width + x) * 4;
+            const key = `${d[i]},${d[i+1]},${d[i+2]},${d[i+3]}`;
+            let idx = paletteMap[key];
+            if (idx === undefined) {
+                idx = palette.length;
+                paletteMap[key] = idx;
+                palette.push(d[i], d[i+1], d[i+2], d[i+3]);
+            }
+            indexedPixels[y * canvas.width + x] = idx;
+        }
+    }
 
     const pngBuffer = UPNG.encode([indexedPixels], canvas.width, canvas.height, palette.length, palette);
     const blob = new Blob([pngBuffer], { type: "image/png" });
@@ -271,6 +272,7 @@ async function render() {
 
     p.downloadLink.href = URL.createObjectURL(blob);
     p.downloadLink.download = file.name;
+
     continue;
 }
 
