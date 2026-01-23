@@ -151,7 +151,7 @@ function ditherFS(ctx, w, h, colors) {
 }
 
 /* =========================
-   RENDER PNG - STUFENWEISE KOMPRESSIEREN
+   RENDER PNG - STUFENWEISE KOMPRESSIEREN (QUALITÄT)
 ========================= */
 async function render() {
     zipFiles = [];
@@ -168,26 +168,22 @@ async function render() {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
 
-        // Ausgangsgröße: z.B. 256x256
-        let step = 1;  // Step-Wert für den Kompressionsprozess
-        let targetWidth = img.width;
-        let targetHeight = img.height;
-        
-        while (targetWidth > 256 || targetHeight > 256) {
-            targetWidth = Math.floor(targetWidth * 0.75);  // 25% Reduktion in jeder Stufe
-            targetHeight = Math.floor(targetHeight * 0.75);
+        // Stufenweise Kompression: Schrittweise Qualitätsreduktion
+        let step = 100;
+        let savedBlob = null;
 
-            // Bild wird immer kleiner
-            const tempCanvas = document.createElement("canvas");
-            tempCanvas.width = targetWidth;
-            tempCanvas.height = targetHeight;
-            const tempCtx = tempCanvas.getContext("2d");
-            tempCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
+        while (step > 10) {  // Hier definierst du die minimale Qualitätsstufe (z.B. 10%)
+            let quality = step / 100;
 
-            // Kompression anwenden
-            quantizeSimple(tempCtx, targetWidth, targetHeight, percent);  // Optional: ditherFS statt quantizeSimple
-            let blob = await new Promise((r) => tempCanvas.toBlob(r, "image/png"));
-            if (blob.size >= file.size) blob = file; // Verhindern, dass die Kompression das Bild vergrößert
+            // Wenden wir die Quantisierung an (oder Dithering, je nachdem)
+            quantizeSimple(ctx, canvas.width, canvas.height, percent);
+
+            let blob = await new Promise((r) => canvas.toBlob(r, "image/png", quality));
+            if (savedBlob && blob.size >= savedBlob.size) {
+                break; // Wenn die Qualität gleich oder schlechter wird, stoppen wir
+            }
+
+            savedBlob = blob;
 
             zipFiles.push({ name: file.name, blob });
             p.compressedImg.src = URL.createObjectURL(blob);
@@ -195,12 +191,10 @@ async function render() {
             const saved = 100 - (blob.size / file.size) * 100;
             p.infoDiv.textContent = `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
 
-            if (targetWidth <= 256 && targetHeight <= 256) {
-                break; // Stoppe, wenn die Zielgröße erreicht ist
-            }
+            step -= 10;  // Reduziere die Qualität in Schritten von 10%
         }
 
-        p.downloadLink.href = URL.createObjectURL(blob);
+        p.downloadLink.href = URL.createObjectURL(savedBlob);
         p.downloadLink.download = file.name;
     }
 }
