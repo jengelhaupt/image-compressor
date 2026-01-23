@@ -30,61 +30,59 @@ if (ACTIVE === "jpg") {
 }
 
 if (controlInput) {
-    controlInput.addEventListener("input", () => {
+    controlInput.oninput = () => {
         controlLabel.textContent = controlInput.value;
         render();
-    });
+    };
 }
 
 /* =========================
-   DRAG & DROP & FILE INPUT
+   DRAG & DROP
 ========================= */
-dropzone.addEventListener("click", () => fileInput.click());
+dropzone.onclick = () => fileInput.click();
 
-dropzone.addEventListener("dragover", (e) => {
+dropzone.ondragover = (e) => {
     e.preventDefault();
-    e.stopPropagation();
     dropzone.classList.add("dragover");
-});
+};
 
-dropzone.addEventListener("dragleave", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dropzone.classList.remove("dragover");
-});
+dropzone.ondragleave = () => dropzone.classList.remove("dragover");
 
-dropzone.addEventListener("drop", async (e) => {
+dropzone.ondrop = async (e) => {
     e.preventDefault();
-    e.stopPropagation();
     dropzone.classList.remove("dragover");
-    if (e.dataTransfer.files.length === 0) return;
     files = [...e.dataTransfer.files];
     await prepareImages();
     await render();
-    requestAnimationFrame(() => preview.scrollIntoView({ behavior: "smooth" }));
-});
+    requestAnimationFrame(() => {
+        preview.scrollIntoView({ behavior: "smooth" });
+    });
+};
 
-fileInput.addEventListener("change", async (e) => {
-    if (e.target.files.length === 0) return;
+/* =========================
+   UPLOAD EVENTS
+========================= */
+fileInput.onchange = async (e) => {
     files = [...e.target.files];
     await prepareImages();
     await render();
-    requestAnimationFrame(() => preview.scrollIntoView({ behavior: "smooth" }));
-});
+    requestAnimationFrame(() => {
+        preview.scrollIntoView({ behavior: "smooth" });
+    });
+};
 
 /* =========================
    PREPARE IMAGES
 ========================= */
 async function prepareImages() {
     originalImages = await Promise.all(
-        files.map(
-            (file) =>
-                new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.src = URL.createObjectURL(file);
-                    img.onload = () => resolve({ file, img });
-                    img.onerror = reject;
-                })
+        files.map((file) =>
+            new Promise((resolve, reject) => {
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                img.onload = () => resolve({ file, img });
+                img.onerror = reject;
+            })
         )
     );
 
@@ -115,22 +113,32 @@ async function prepareImages() {
 }
 
 /* =========================
-   PNG QUANTIZE & DITHER
+   PNG QUANTIZE
 ========================= */
-function sliderToColors(v) {
-    if (v < 25) return 8;
-    if (v < 50) return 32;
-    if (v < 75) return 64;
-    if (v < 90) return 128;
-    return 256;
-}
-
-function ditherFS(imgData, w, h, colors) {
-    const d = imgData.data;
+function quantizeSimple(ctx, w, h, colors) {
+    const img = ctx.getImageData(0, 0, w, h);
+    const d = img.data;
     const levels = Math.round(Math.cbrt(colors));
     const step = 255 / (levels - 1);
 
-    const q = (v) => Math.round(v / step) * step;
+    for (let i = 0; i < d.length; i += 4) {
+        d[i] = Math.round(d[i] / step) * step;
+        d[i + 1] = Math.round(d[i + 1] / step) * step;
+        d[i + 2] = Math.round(d[i + 2] / step) * step;
+    }
+
+    ctx.putImageData(img, 0, 0);
+}
+
+function ditherFS(ctx, w, h, colors) {
+    const img = ctx.getImageData(0, 0, w, h);
+    const d = img.data;
+    const levels = Math.round(Math.cbrt(colors));
+    const step = 255 / (levels - 1);
+
+    function q(v) {
+        return Math.round(v / step) * step;
+    }
 
     for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
@@ -143,7 +151,9 @@ function ditherFS(imgData, w, h, colors) {
 
                 const spread = (dx, dy, f) => {
                     const ni = ((y + dy) * w + (x + dx)) * 4 + c;
-                    if (ni >= 0 && ni < d.length) d[ni] += err * f;
+                    if (ni >= 0 && ni < d.length) {
+                        d[ni] += err * f;
+                    }
                 };
 
                 spread(1, 0, 7 / 16);
@@ -153,6 +163,8 @@ function ditherFS(imgData, w, h, colors) {
             }
         }
     }
+
+    ctx.putImageData(img, 0, 0);
 }
 
 /* =========================
@@ -172,9 +184,11 @@ async function render() {
             const bytes = await file.arrayBuffer();
             const pdf = await PDFLib.PDFDocument.load(bytes);
             const outBytes = await pdf.save({ compress: true });
+
             const blob = new Blob([outBytes]);
             zipFiles.push({ name: file.name, blob });
-            p.infoDiv.textContent = `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB`;
+
+            p.infoDiv.textContent = `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(blob.size / 1024).toFixed(1)} KB`;
             p.compressedImg.src = "";
             p.downloadLink.href = URL.createObjectURL(blob);
             p.downloadLink.download = file.name;
@@ -188,95 +202,73 @@ async function render() {
             canvas.height = img.height;
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0);
+
             const quality = Math.min(0.99, percent / 100);
-            let blob = await new Promise(r => canvas.toBlob(r, "image/webp", quality));
+            let blob = await new Promise((r) => canvas.toBlob(r, "image/webp", quality));
             if (blob.size >= file.size) blob = file;
+
             const newName = file.name.replace(/\.(jpg|jpeg|png|webp)$/i, ".webp");
+
             zipFiles.push({ name: newName, blob });
             p.compressedImg.src = URL.createObjectURL(blob);
-            const saved = 100 - (blob.size / file.size * 100);
-            p.infoDiv.textContent = `Original ${(file.size/1024).toFixed(1)} KB → WebP ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+
+            const saved = 100 - (blob.size / file.size) * 100;
+            p.infoDiv.textContent = `Original ${(file.size / 1024).toFixed(1)} KB → WebP ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+
             p.downloadLink.href = URL.createObjectURL(blob);
             p.downloadLink.download = newName;
             continue;
         }
 
-        /* -------- JPG / PNG -------- */
+        /* -------- JPG / PNG (kein Prozent) -------- */
+        if (percent >= 100) {
+            zipFiles.push({ name: file.name, blob: file });
+            p.compressedImg.src = URL.createObjectURL(file);
+            p.infoDiv.textContent = `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(file.size / 1024).toFixed(1)} KB (0%)`;
+            p.downloadLink.href = URL.createObjectURL(file);
+            p.downloadLink.download = file.name;
+            continue;
+        }
+
+        /* -------- CANVAS -------- */
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
 
-        if (percent >= 100) {
-            zipFiles.push({ name: file.name, blob: file });
-            p.compressedImg.src = URL.createObjectURL(file);
-            p.infoDiv.textContent = `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(file.size/1024).toFixed(1)} KB (0%)`;
-            p.downloadLink.href = URL.createObjectURL(file);
-            p.downloadLink.download = file.name;
-            continue;
-        }
-
-        if (ACTIVE === "jpg") {
-            const quality = Math.min(0.99, percent / 100);
-            let blob = await new Promise(r => canvas.toBlob(r, "image/jpeg", quality));
-            if (blob.size >= file.size) blob = file;
-            zipFiles.push({ name: file.name, blob });
-            p.compressedImg.src = URL.createObjectURL(blob);
-            const saved = 100 - (blob.size / file.size * 100);
-            p.infoDiv.textContent = `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-            p.downloadLink.href = URL.createObjectURL(blob);
-            p.downloadLink.download = file.name;
-            continue;
-        }
+        let type = ACTIVE === "jpg" ? "image/jpeg" : "image/png";
+        let quality = ACTIVE === "jpg" ? Math.min(0.99, percent / 100) : 1;
 
         if (ACTIVE === "png") {
-            const colors = sliderToColors(percent);
-            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            ditherFS(imgData, canvas.width, canvas.height, colors);
-            const d = imgData.data;
-
-            const paletteMap = {};
-            const palette = [];
-            const indexedPixels = new Uint8Array(canvas.width * canvas.height);
-
-            for (let y = 0; y < canvas.height; y++) {
-                for (let x = 0; x < canvas.width; x++) {
-                    const i = (y * canvas.width + x) * 4;
-                    const key = `${d[i]},${d[i+1]},${d[i+2]},${d[i+3]}`;
-                    let idx = paletteMap[key];
-                    if (idx === undefined) {
-                        idx = palette.length / 4;
-                        paletteMap[key] = idx;
-                        palette.push(d[i], d[i+1], d[i+2], d[i+3]);
-                    }
-                    indexedPixels[y * canvas.width + x] = idx;
-                }
-            }
-
-            const pngBuffer = UPNG.encode([indexedPixels], canvas.width, canvas.height, palette.length / 4, palette);
-            const blob = new Blob([pngBuffer], { type: "image/png" });
-
-            zipFiles.push({ name: file.name, blob });
-            p.compressedImg.src = URL.createObjectURL(blob);
-            const saved = 100 - (blob.size / file.size * 100);
-            p.infoDiv.textContent = `Original ${(file.size/1024).toFixed(1)} KB → Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-            p.downloadLink.href = URL.createObjectURL(blob);
-            p.downloadLink.download = file.name;
+            ditherFS(ctx, canvas.width, canvas.height, percent);
         }
+
+        let blob = await new Promise((r) => canvas.toBlob(r, type, quality));
+        if (blob.size >= file.size) blob = file;
+
+        zipFiles.push({ name: file.name, blob });
+        p.compressedImg.src = URL.createObjectURL(blob);
+
+        const saved = 100 - (blob.size / file.size) * 100;
+        p.infoDiv.textContent = `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+        p.downloadLink.href = URL.createObjectURL(blob);
+        p.downloadLink.download = file.name;
     }
 }
 
 /* =========================
    ZIP
 ========================= */
-zipBtn.addEventListener("click", async () => {
+zipBtn.onclick = async () => {
     if (!zipFiles.length) return;
+
     const zip = new JSZip();
-    zipFiles.forEach(f => zip.file(f.name, f.blob));
+    zipFiles.forEach((f) => zip.file(f.name, f.blob));
+
     const blob = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `${ACTIVE}-komprimiert.zip`;
     a.click();
-});
+};
