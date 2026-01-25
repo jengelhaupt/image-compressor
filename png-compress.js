@@ -9,7 +9,7 @@ let originalImages = [];
 let previewItems = [];
 
 /* =========================
-   CONTROLS (nur PNG)
+   CONTROLS (PNG Farben)
 ========================= */
 const controlInput = document.getElementById("pngC");
 const controlLabel = document.getElementById("pngVal");
@@ -37,21 +37,15 @@ dropzone.ondrop = async (e) => {
     files = [...e.dataTransfer.files].filter(f => f.type === "image/png");
     await prepareImages();
     await render();
-    requestAnimationFrame(() => {
-        preview.scrollIntoView({ behavior: "smooth" });
-    });
 };
 
 /* =========================
-   UPLOAD EVENTS
+   FILE UPLOAD
 ========================= */
 fileInput.onchange = async (e) => {
     files = [...e.target.files].filter(f => f.type === "image/png");
     await prepareImages();
     await render();
-    requestAnimationFrame(() => {
-        preview.scrollIntoView({ behavior: "smooth" });
-    });
 };
 
 /* =========================
@@ -59,25 +53,23 @@ fileInput.onchange = async (e) => {
 ========================= */
 async function prepareImages() {
     originalImages = await Promise.all(
-        files.map((file) =>
-            new Promise((resolve, reject) => {
-                const img = new Image();
-                img.src = URL.createObjectURL(file);
-                img.onload = () => resolve({ file, img });
-                img.onerror = reject;
-            })
-        )
+        files.map(file => new Promise((resolve, reject) => {
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+            img.onload = () => resolve({ file, img });
+            img.onerror = reject;
+        }))
     );
 
     preview.innerHTML = "";
     previewItems = [];
 
-    originalImages.forEach((item) => {
+    originalImages.forEach(({ file }) => {
         const container = document.createElement("div");
         container.className = "previewItem";
 
         const origImg = document.createElement("img");
-        origImg.src = URL.createObjectURL(item.file);
+        origImg.src = URL.createObjectURL(file);
 
         const compressedImg = document.createElement("img");
 
@@ -96,16 +88,17 @@ async function prepareImages() {
 }
 
 /* =========================
-   PNG QUANTIZE & DITHER
+   QUANTIZE (Basis)
 ========================= */
 function quantizeSimple(ctx, w, h, colors) {
     const img = ctx.getImageData(0, 0, w, h);
     const d = img.data;
-    const levels = Math.round(Math.cbrt(colors));
+
+    const levels = Math.max(2, Math.round(Math.cbrt(colors)));
     const step = 255 / (levels - 1);
 
     for (let i = 0; i < d.length; i += 4) {
-        d[i] = Math.round(d[i] / step) * step;
+        d[i]     = Math.round(d[i]     / step) * step;
         d[i + 1] = Math.round(d[i + 1] / step) * step;
         d[i + 2] = Math.round(d[i + 2] / step) * step;
     }
@@ -113,15 +106,16 @@ function quantizeSimple(ctx, w, h, colors) {
     ctx.putImageData(img, 0, 0);
 }
 
+/* =========================
+   OPTIONAL: DITHERING
+========================= */
 function ditherFS(ctx, w, h, colors) {
     const img = ctx.getImageData(0, 0, w, h);
     const d = img.data;
-    const levels = Math.round(Math.cbrt(colors));
-    const step = 255 / (levels - 1);
 
-    function q(v) {
-        return Math.round(v / step) * step;
-    }
+    const levels = Math.max(2, Math.round(Math.cbrt(colors)));
+    const step = 255 / (levels - 1);
+    const q = v => Math.round(v / step) * step;
 
     for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
@@ -151,66 +145,82 @@ function ditherFS(ctx, w, h, colors) {
 }
 
 /* =========================
-   RENDER PNG - STUFENWEISE KOMPRESSIEREN (QUALITÄT)
+   PROGRESSIVE QUANTIZE
+========================= */
+function quantizeProgressive(ctx, w, h, targetColors, strength) {
+    const startColors = 256;
+    const colors = Math.round(
+        startColors - (startColors - targetColors) * strength
+    );
+    quantizeSimple(ctx, w, h, colors);
+}
+
+/* =========================
+   RENDER
 ========================= */
 async function render() {
-    zipFiles = [];
     if (!originalImages.length) return;
+    zipFiles = [];
+
+    const steps = 20;
+    const targetColors = Number(controlInput.value);
 
     for (let i = 0; i < originalImages.length; i++) {
         const { file, img } = originalImages[i];
         const p = previewItems[i];
-        const percent = Number(controlInput.value);
 
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;
         const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
 
-        // Stufenweise Kompression: Schrittweise Qualitätsreduktion
-        let step = 100;
-        let savedBlob = null;
+        let bestBlob = null;
 
-        while (step > 10) {  // Hier definierst du die minimale Qualitätsstufe (z.B. 10%)
-            let quality = step / 100;
+        for (let s = 0; s <= steps; s++) {
+            const strength = s / steps;
 
-            // Wenden wir die Quantisierung an (oder Dithering, je nachdem)
-            quantizeSimple(ctx, canvas.width, canvas.height, percent);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
 
-            let blob = await new Promise((r) => canvas.toBlob(r, "image/png", quality));
-            if (savedBlob && blob.size >= savedBlob.size) {
-                break; // Wenn die Qualität gleich oder schlechter wird, stoppen wir
+            quantizeProgressive(ctx, canvas.width, canvas.height, targetColors, strength);
+
+            if (targetColors < 64) {
+                ditherFS(ctx, canvas.width, canvas.height, targetColors);
             }
 
-            savedBlob = blob;
+            const blob = await new Promise(r =>
+                canvas.toBlob(r, "image/png")
+            );
 
-            zipFiles.push({ name: file.name, blob });
-            p.compressedImg.src = URL.createObjectURL(blob);
+            if (!bestBlob || blob.size < bestBlob.size) {
+                bestBlob = blob;
+                p.compressedImg.src = URL.createObjectURL(blob);
 
-            const saved = 100 - (blob.size / file.size) * 100;
-            p.infoDiv.textContent = `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-
-            step -= 1;  // Reduziere die Qualität in Schritten von 1%
+                const saved = 100 - (blob.size / file.size) * 100;
+                p.infoDiv.textContent =
+                    `Original ${(file.size / 1024).toFixed(1)} KB → ` +
+                    `Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+            }
         }
 
-        p.downloadLink.href = URL.createObjectURL(savedBlob);
+        zipFiles.push({ name: file.name, blob: bestBlob });
+        p.downloadLink.href = URL.createObjectURL(bestBlob);
         p.downloadLink.download = file.name;
     }
 }
 
 /* =========================
-   ZIP
+   ZIP DOWNLOAD
 ========================= */
 zipBtn.onclick = async () => {
     if (!zipFiles.length) return;
 
     const zip = new JSZip();
-    zipFiles.forEach((f) => zip.file(f.name, f.blob));
+    zipFiles.forEach(f => zip.file(f.name, f.blob));
 
     const blob = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `png-komprimiert.zip`;
+    a.download = "png-komprimiert.zip";
     a.click();
 };
