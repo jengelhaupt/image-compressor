@@ -9,13 +9,13 @@ let originalImages = [];
 let previewItems = [];
 
 /* =========================
-   CONTROLS (PNG Farben)
+   CONTROL (QUALITY 0–100)
 ========================= */
 const controlInput = document.getElementById("pngC");
 const controlLabel = document.getElementById("pngVal");
 
 controlInput.oninput = () => {
-    controlLabel.textContent = controlInput.value;
+    controlLabel.textContent = controlInput.value + "%";
     render();
 };
 
@@ -24,14 +24,15 @@ controlInput.oninput = () => {
 ========================= */
 dropzone.onclick = () => fileInput.click();
 
-dropzone.ondragover = (e) => {
+dropzone.ondragover = e => {
     e.preventDefault();
     dropzone.classList.add("dragover");
 };
 
-dropzone.ondragleave = () => dropzone.classList.remove("dragover");
+dropzone.ondragleave = () =>
+    dropzone.classList.remove("dragover");
 
-dropzone.ondrop = async (e) => {
+dropzone.ondrop = async e => {
     e.preventDefault();
     dropzone.classList.remove("dragover");
     files = [...e.dataTransfer.files].filter(f => f.type === "image/png");
@@ -40,16 +41,16 @@ dropzone.ondrop = async (e) => {
 };
 
 /* =========================
-   FILE UPLOAD
+   FILE INPUT
 ========================= */
-fileInput.onchange = async (e) => {
+fileInput.onchange = async e => {
     files = [...e.target.files].filter(f => f.type === "image/png");
     await prepareImages();
     await render();
 };
 
 /* =========================
-   PREPARE IMAGES
+   PREPARE
 ========================= */
 async function prepareImages() {
     originalImages = await Promise.all(
@@ -83,12 +84,12 @@ async function prepareImages() {
         container.append(origImg, compressedImg, infoDiv, downloadLink);
         preview.appendChild(container);
 
-        previewItems.push({ origImg, compressedImg, infoDiv, downloadLink });
+        previewItems.push({ compressedImg, infoDiv, downloadLink });
     });
 }
 
 /* =========================
-   QUANTIZE (Basis)
+   BASIC QUANTIZATION
 ========================= */
 function quantizeSimple(ctx, w, h, colors) {
     const img = ctx.getImageData(0, 0, w, h);
@@ -107,7 +108,7 @@ function quantizeSimple(ctx, w, h, colors) {
 }
 
 /* =========================
-   OPTIONAL: DITHERING
+   FLOYD–STEINBERG DITHER
 ========================= */
 function ditherFS(ctx, w, h, colors) {
     const img = ctx.getImageData(0, 0, w, h);
@@ -128,9 +129,7 @@ function ditherFS(ctx, w, h, colors) {
 
                 const spread = (dx, dy, f) => {
                     const ni = ((y + dy) * w + (x + dx)) * 4 + c;
-                    if (ni >= 0 && ni < d.length) {
-                        d[ni] += err * f;
-                    }
+                    if (ni >= 0 && ni < d.length) d[ni] += err * f;
                 };
 
                 spread(1, 0, 7 / 16);
@@ -145,14 +144,26 @@ function ditherFS(ctx, w, h, colors) {
 }
 
 /* =========================
-   PROGRESSIVE QUANTIZE
+   QUALITY → QUANTIZATION
 ========================= */
-function quantizeProgressive(ctx, w, h, targetColors, strength) {
-    const startColors = 256;
+function applyQuality(ctx, w, h, quality) {
+    if (quality >= 100) return; // 🔴 KEINE Änderung!
+
+    // nichtlinear: oben extrem fein
+    const t = Math.pow(1 - quality / 100, 2);
+
+    const maxColors = 4096; // praktisch verlustfrei
+    const minColors = 16;
+
     const colors = Math.round(
-        startColors - (startColors - targetColors) * strength
+        maxColors - (maxColors - minColors) * t
     );
+
     quantizeSimple(ctx, w, h, colors);
+
+    if (quality < 60) {
+        ditherFS(ctx, w, h, colors);
+    }
 }
 
 /* =========================
@@ -162,8 +173,7 @@ async function render() {
     if (!originalImages.length) return;
     zipFiles = [];
 
-    const steps = 20;
-    const targetColors = Number(controlInput.value);
+    const quality = Number(controlInput.value);
 
     for (let i = 0; i < originalImages.length; i++) {
         const { file, img } = originalImages[i];
@@ -174,43 +184,31 @@ async function render() {
         canvas.height = img.height;
         const ctx = canvas.getContext("2d");
 
-        let bestBlob = null;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
 
-        for (let s = 0; s <= steps; s++) {
-            const strength = s / steps;
+        applyQuality(ctx, canvas.width, canvas.height, quality);
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0);
+        const blob = await new Promise(r =>
+            canvas.toBlob(r, "image/png")
+        );
 
-            quantizeProgressive(ctx, canvas.width, canvas.height, targetColors, strength);
+        zipFiles.push({ name: file.name, blob });
 
-            if (targetColors < 64) {
-                ditherFS(ctx, canvas.width, canvas.height, targetColors);
-            }
+        p.compressedImg.src = URL.createObjectURL(blob);
 
-            const blob = await new Promise(r =>
-                canvas.toBlob(r, "image/png")
-            );
+        const saved = 100 - (blob.size / file.size) * 100;
+        p.infoDiv.textContent =
+            `Original ${(file.size / 1024).toFixed(1)} KB → ` +
+            `Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
 
-            if (!bestBlob || blob.size < bestBlob.size) {
-                bestBlob = blob;
-                p.compressedImg.src = URL.createObjectURL(blob);
-
-                const saved = 100 - (blob.size / file.size) * 100;
-                p.infoDiv.textContent =
-                    `Original ${(file.size / 1024).toFixed(1)} KB → ` +
-                    `Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-            }
-        }
-
-        zipFiles.push({ name: file.name, blob: bestBlob });
-        p.downloadLink.href = URL.createObjectURL(bestBlob);
+        p.downloadLink.href = URL.createObjectURL(blob);
         p.downloadLink.download = file.name;
     }
 }
 
 /* =========================
-   ZIP DOWNLOAD
+   ZIP
 ========================= */
 zipBtn.onclick = async () => {
     if (!zipFiles.length) return;
