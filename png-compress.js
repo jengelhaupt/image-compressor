@@ -9,7 +9,7 @@ let originalImages = [];
 let previewItems = [];
 
 /* =========================
-   CONTROL (QUALITY 0–100)
+   CONTROL
 ========================= */
 const controlInput = document.getElementById("pngC");
 const controlLabel = document.getElementById("pngVal");
@@ -50,7 +50,7 @@ fileInput.onchange = async e => {
 };
 
 /* =========================
-   PREPARE IMAGES
+   PREPARE
 ========================= */
 async function prepareImages() {
     originalImages = await Promise.all(
@@ -89,7 +89,7 @@ async function prepareImages() {
 }
 
 /* =========================
-   BASIC QUANTIZATION
+   QUANTIZE
 ========================= */
 function quantizeSimple(ctx, w, h, colors) {
     const img = ctx.getImageData(0, 0, w, h);
@@ -108,7 +108,7 @@ function quantizeSimple(ctx, w, h, colors) {
 }
 
 /* =========================
-   DITHERING
+   DITHER
 ========================= */
 function ditherFS(ctx, w, h, colors) {
     const img = ctx.getImageData(0, 0, w, h);
@@ -144,14 +144,12 @@ function ditherFS(ctx, w, h, colors) {
 }
 
 /* =========================
-   QUALITY → IMAGE CHANGE
+   QUALITY
 ========================= */
 function applyQuality(ctx, w, h, quality) {
     if (quality >= 100) return;
 
-    // nichtlineare Kurve: oben sehr fein
     const t = Math.pow(1 - quality / 100, 2);
-
     const maxColors = 4096;
     const minColors = 16;
 
@@ -181,9 +179,9 @@ async function render() {
 
         let blob;
 
-        // 🔴 100 % = ORIGINALDATEI (kein Re-Encode!)
         if (quality === 100) {
-            blob = file;
+            // ✅ MOBILE-SAFE ORIGINAL
+            blob = file.slice(0, file.size, file.type);
 
             p.infoDiv.textContent =
                 `Original ${(file.size / 1024).toFixed(1)} KB (unverändert)`;
@@ -207,7 +205,6 @@ async function render() {
         }
 
         zipFiles.push({ name: file.name, blob });
-
         p.compressedImg.src = URL.createObjectURL(blob);
         p.downloadLink.href = URL.createObjectURL(blob);
         p.downloadLink.download = file.name;
