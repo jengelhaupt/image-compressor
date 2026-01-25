@@ -50,7 +50,7 @@ fileInput.onchange = async e => {
 };
 
 /* =========================
-   PREPARE
+   PREPARE IMAGES
 ========================= */
 async function prepareImages() {
     originalImages = await Promise.all(
@@ -108,7 +108,7 @@ function quantizeSimple(ctx, w, h, colors) {
 }
 
 /* =========================
-   FLOYD–STEINBERG DITHER
+   DITHERING
 ========================= */
 function ditherFS(ctx, w, h, colors) {
     const img = ctx.getImageData(0, 0, w, h);
@@ -144,15 +144,15 @@ function ditherFS(ctx, w, h, colors) {
 }
 
 /* =========================
-   QUALITY → QUANTIZATION
+   QUALITY → IMAGE CHANGE
 ========================= */
 function applyQuality(ctx, w, h, quality) {
-    if (quality >= 100) return; // 🔴 KEINE Änderung!
+    if (quality >= 100) return;
 
-    // nichtlinear: oben extrem fein
+    // nichtlineare Kurve: oben sehr fein
     const t = Math.pow(1 - quality / 100, 2);
 
-    const maxColors = 4096; // praktisch verlustfrei
+    const maxColors = 4096;
     const minColors = 16;
 
     const colors = Math.round(
@@ -179,29 +179,36 @@ async function render() {
         const { file, img } = originalImages[i];
         const p = previewItems[i];
 
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
+        let blob;
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0);
+        // 🔴 100 % = ORIGINALDATEI (kein Re-Encode!)
+        if (quality === 100) {
+            blob = file;
 
-        applyQuality(ctx, canvas.width, canvas.height, quality);
+            p.infoDiv.textContent =
+                `Original ${(file.size / 1024).toFixed(1)} KB (unverändert)`;
+        } else {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
 
-        const blob = await new Promise(r =>
-            canvas.toBlob(r, "image/png")
-        );
+            ctx.drawImage(img, 0, 0);
+            applyQuality(ctx, canvas.width, canvas.height, quality);
+
+            blob = await new Promise(r =>
+                canvas.toBlob(r, "image/png")
+            );
+
+            const saved = 100 - (blob.size / file.size) * 100;
+            p.infoDiv.textContent =
+                `Original ${(file.size / 1024).toFixed(1)} KB → ` +
+                `Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+        }
 
         zipFiles.push({ name: file.name, blob });
 
         p.compressedImg.src = URL.createObjectURL(blob);
-
-        const saved = 100 - (blob.size / file.size) * 100;
-        p.infoDiv.textContent =
-            `Original ${(file.size / 1024).toFixed(1)} KB → ` +
-            `Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-
         p.downloadLink.href = URL.createObjectURL(blob);
         p.downloadLink.download = file.name;
     }
