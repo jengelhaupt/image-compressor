@@ -3,6 +3,7 @@ const fileInput = document.getElementById("fileInput");
 const preview = document.getElementById("preview");
 const zipBtn = document.getElementById("zipBtn");
 
+const qualityWrapper = document.getElementById("webp");
 const qualityInput = document.getElementById("webpQ");
 const qualityLabel = document.getElementById("webpVal");
 
@@ -137,8 +138,18 @@ async function render() {
         p.download.download = newName;
     }
 
-    // 👇 Nach dem Render automatisch scrollen
-    preview.scrollIntoView({ behavior: "smooth", block: "start" });
+    const sliderBottom =
+        qualityWrapper.getBoundingClientRect().bottom + window.scrollY;
+
+    const previewTop =
+        preview.getBoundingClientRect().top + window.scrollY;
+
+    if (previewTop > sliderBottom) {
+        window.scrollTo({
+            top: previewTop - qualityWrapper.offsetHeight - 40,
+            behavior: "smooth"
+        });
+    }
 }
 
 /* =========================
