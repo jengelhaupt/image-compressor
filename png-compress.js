@@ -11,13 +11,17 @@ let previewItems = [];
 /* =========================
    CONTROL (QUALITY 0–100)
 ========================= */
+const qualityWrapper = document.getElementById("png");
 const controlInput = document.getElementById("pngC");
 const controlLabel = document.getElementById("pngVal");
 
+controlLabel.textContent = controlInput.value + "%";
 controlInput.oninput = () => {
     controlLabel.textContent = controlInput.value + "%";
-    render();
 };
+
+// Render erst beim Loslassen
+controlInput.onchange = () => render();
 
 /* =========================
    DRAG & DROP
@@ -211,6 +215,20 @@ async function render() {
         p.compressedImg.src = URL.createObjectURL(blob);
         p.downloadLink.href = URL.createObjectURL(blob);
         p.downloadLink.download = file.name;
+    }
+   
+    const sliderBottom =
+        qualityWrapper.getBoundingClientRect().bottom + window.scrollY;
+
+    const previewTop =
+        preview.getBoundingClientRect().top + window.scrollY;
+
+    const offset = 16; // anpassbarer Abstand
+    if (previewTop > sliderBottom) {
+        window.scrollTo({
+            top: previewTop - qualityWrapper.offsetHeight - offset,
+            behavior: "smooth"
+        });
     }
 }
 
