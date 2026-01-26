@@ -93,7 +93,37 @@ async function prepareImages() {
 }
 
 /* =========================
-   RENDER MIT UPNG
+   FLOYD-STEINBERG DITHERING (optional)
+========================= */
+function ditherFS(data, w, h, colors) {
+    const step = 255 / (colors - 1);
+    const q = v => Math.round(v / step) * step;
+
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const i = (y * w + x) * 4;
+            for (let c = 0; c < 3; c++) {
+                const oldVal = data[i + c];
+                const newVal = q(oldVal);
+                const err = oldVal - newVal;
+                data[i + c] = newVal;
+
+                const spread = (dx, dy, factor) => {
+                    const ni = ((y + dy) * w + (x + dx)) * 4 + c;
+                    if (ni >= 0 && ni < data.length) data[ni] += err * factor;
+                };
+
+                spread(1, 0, 7 / 16);
+                spread(-1, 1, 3 / 16);
+                spread(0, 1, 5 / 16);
+                spread(1, 1, 1 / 16);
+            }
+        }
+    }
+}
+
+/* =========================
+   RENDER MIT UPNG UND OPTIONAL DITHER
 ========================= */
 async function render() {
     if (!originalImages.length) return;
@@ -107,7 +137,7 @@ async function render() {
 
         let blob;
 
-        // 🔴 100% = Originaldatei
+        // 100% = Originaldatei
         if (quality >= 100) {
             blob = file;
             p.infoDiv.textContent =
@@ -119,17 +149,19 @@ async function render() {
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0);
 
-            // Pixel extrahieren
+            // RGBA korrekt extrahieren
             const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const rgba = new Uint8Array(imgData.data.buffer);
+            const rgba = new Uint8Array(imgData.data); // ✅ wichtig: direkt aus ImageData
 
             // Farben basierend auf Slider
             const maxColors = 256;
             const colors = Math.max(2, Math.round(maxColors * quality / 100));
 
-            // UPNG encode korrekt ([rgba], w, h, bitdepth 0=automatisch, palette size)
-            const pngData = UPNG.encode([rgba], canvas.width, canvas.height, 0, colors);
+            // optional: Dithering bei mittlerer Qualität
+            if (quality < 80) ditherFS(rgba, canvas.width, canvas.height, colors);
 
+            // UPNG encode
+            const pngData = UPNG.encode([rgba], canvas.width, canvas.height, 0, colors);
             blob = new Blob([pngData], { type: "image/png" });
 
             const saved = 100 - (blob.size / file.size) * 100;
