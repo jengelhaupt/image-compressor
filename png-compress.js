@@ -9,7 +9,7 @@ let originalImages = [];
 let previewItems = [];
 
 /* =========================
-   CONTROL (QUALITY 0–100)
+   CONTROL (QUALITY 1–100)
 ========================= */
 const qualityWrapper = document.getElementById("png");
 const controlInput = document.getElementById("pngC");
@@ -93,91 +93,13 @@ async function prepareImages() {
 }
 
 /* =========================
-   BASIC QUANTIZATION
-========================= */
-function quantizeSimple(ctx, w, h, colors) {
-    const img = ctx.getImageData(0, 0, w, h);
-    const d = img.data;
-
-    const levels = Math.max(2, Math.round(Math.cbrt(colors)));
-    const step = 255 / (levels - 1);
-
-    for (let i = 0; i < d.length; i += 4) {
-        d[i]     = Math.round(d[i]     / step) * step;
-        d[i + 1] = Math.round(d[i + 1] / step) * step;
-        d[i + 2] = Math.round(d[i + 2] / step) * step;
-    }
-
-    ctx.putImageData(img, 0, 0);
-}
-
-/* =========================
-   DITHERING
-========================= */
-function ditherFS(ctx, w, h, colors) {
-    const img = ctx.getImageData(0, 0, w, h);
-    const d = img.data;
-
-    const levels = Math.max(2, Math.round(Math.cbrt(colors)));
-    const step = 255 / (levels - 1);
-    const q = v => Math.round(v / step) * step;
-
-    for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-            const i = (y * w + x) * 4;
-            for (let c = 0; c < 3; c++) {
-                const old = d[i + c];
-                const neu = q(old);
-                const err = old - neu;
-                d[i + c] = neu;
-
-                const spread = (dx, dy, f) => {
-                    const ni = ((y + dy) * w + (x + dx)) * 4 + c;
-                    if (ni >= 0 && ni < d.length) d[ni] += err * f;
-                };
-
-                spread(1, 0, 7 / 16);
-                spread(-1, 1, 3 / 16);
-                spread(0, 1, 5 / 16);
-                spread(1, 1, 1 / 16);
-            }
-        }
-    }
-
-    ctx.putImageData(img, 0, 0);
-}
-
-/* =========================
-   QUALITY → IMAGE CHANGE
-========================= */
-function applyQuality(ctx, w, h, quality) {
-    if (quality >= 100) return;
-
-    // nichtlineare Kurve: oben sehr fein
-    const t = Math.pow(1 - quality / 100, 2);
-
-    const maxColors = 4096;
-    const minColors = 16;
-
-    const colors = Math.round(
-        maxColors - (maxColors - minColors) * t
-    );
-
-    quantizeSimple(ctx, w, h, colors);
-
-    if (quality < 60) {
-        ditherFS(ctx, w, h, colors);
-    }
-}
-
-/* =========================
-   RENDER
+   RENDER MIT UPNG
 ========================= */
 async function render() {
     if (!originalImages.length) return;
     zipFiles = [];
 
-    const quality = Number(controlInput.value);
+    const quality = Number(controlInput.value); // 1–100
 
     for (let i = 0; i < originalImages.length; i++) {
         const { file, img } = originalImages[i];
@@ -185,10 +107,9 @@ async function render() {
 
         let blob;
 
-        // 🔴 100 % = ORIGINALDATEI (kein Re-Encode!)
-        if (quality === 100) {
+        // 🔴 100% = Originaldatei
+        if (quality >= 100) {
             blob = file;
-
             p.infoDiv.textContent =
                 `Original ${(file.size / 1024).toFixed(1)} KB (unverändert)`;
         } else {
@@ -196,18 +117,24 @@ async function render() {
             canvas.width = img.width;
             canvas.height = img.height;
             const ctx = canvas.getContext("2d");
-
             ctx.drawImage(img, 0, 0);
-            applyQuality(ctx, canvas.width, canvas.height, quality);
 
-            blob = await new Promise(r =>
-                canvas.toBlob(r, "image/png")
-            );
+            // Pixel extrahieren
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const rgba = new Uint8Array(imgData.data.buffer);
+
+            // Farben basierend auf Slider
+            const maxColors = 256;
+            const colors = Math.max(2, Math.round(maxColors * quality / 100));
+
+            // UPNG komprimieren
+            const pngData = UPNG.encode([rgba.buffer], canvas.width, canvas.height, 0, colors);
+
+            blob = new Blob([pngData], { type: "image/png" });
 
             const saved = 100 - (blob.size / file.size) * 100;
             p.infoDiv.textContent =
-                `Original ${(file.size / 1024).toFixed(1)} KB → ` +
-                `Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+                `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
         }
 
         zipFiles.push({ name: file.name, blob });
@@ -216,14 +143,12 @@ async function render() {
         p.downloadLink.href = URL.createObjectURL(blob);
         p.downloadLink.download = file.name;
     }
-   
-    const sliderBottom =
-        qualityWrapper.getBoundingClientRect().bottom + window.scrollY;
 
-    const previewTop =
-        preview.getBoundingClientRect().top + window.scrollY;
-
+    // Scroll: Preview immer im Blick, Slider sichtbar
+    const sliderBottom = qualityWrapper.getBoundingClientRect().bottom + window.scrollY;
+    const previewTop = preview.getBoundingClientRect().top + window.scrollY;
     const offset = 16; // anpassbarer Abstand
+
     if (previewTop > sliderBottom) {
         window.scrollTo({
             top: previewTop - qualityWrapper.offsetHeight - offset,
@@ -233,7 +158,7 @@ async function render() {
 }
 
 /* =========================
-   ZIP
+   ZIP DOWNLOAD
 ========================= */
 zipBtn.onclick = async () => {
     if (!zipFiles.length) return;
