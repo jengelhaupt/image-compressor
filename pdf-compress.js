@@ -3,6 +3,7 @@ const fileInput = document.getElementById("fileInput");
 const preview = document.getElementById("preview");
 const zipBtn = document.getElementById("zipBtn");
 
+const qualityWrapper = document.getElementById("pdf");
 const controlInput = document.getElementById("pdfQ");
 const controlLabel = document.getElementById("pdfVal");
 
@@ -101,8 +102,15 @@ async function render() {
     }
 
 
-    const previewTop = preview.getBoundingClientRect().top + window.scrollY;
-    window.scrollTo({ top: previewTop - 16, behavior: "smooth" });
+const sliderBottom = qualityWrapper.getBoundingClientRect().bottom + window.scrollY;
+const previewTop = preview.getBoundingClientRect().top + window.scrollY;
+const offset = 16; // anpassbarer Abstand
+
+if (previewTop > sliderBottom) {
+    window.scrollTo({
+        top: previewTop - qualityWrapper.offsetHeight - offset,
+        behavior: "smooth"
+    });
 }
 
 /* =========================
