@@ -144,7 +144,7 @@ const previewTop =
 
 if (previewTop > sliderBottom) {
     window.scrollTo({
-        top: previewTop - qualityWrapper.offsetHeight - 16,
+        top: previewTop - qualityWrapper.offsetHeight - 40,
         behavior: "smooth"
     });
 }
