@@ -5,6 +5,7 @@ const zipBtn = document.getElementById("zipBtn");
 
 const qualityInput = document.getElementById("jpgQ");
 const qualityLabel = document.getElementById("jpgVal");
+const qualityWrapper = document.getElementById("jpg");
 
 let files = [];
 let images = [];
@@ -135,7 +136,17 @@ async function render() {
         p.download.download = file.name;
     }
 
-    preview.scrollIntoView({ behavior: "smooth", block: "start" });
+const sliderBottom =
+    qualityWrapper.getBoundingClientRect().bottom + window.scrollY;
+
+const previewTop =
+    preview.getBoundingClientRect().top + window.scrollY;
+
+if (previewTop > sliderBottom) {
+    window.scrollTo({
+        top: previewTop - qualityWrapper.offsetHeight - 16,
+        behavior: "smooth"
+    });
 }
 
 /* =========================
