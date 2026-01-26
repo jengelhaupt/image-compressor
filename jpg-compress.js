@@ -16,10 +16,12 @@ let zipFiles = [];
 ========================= */
 qualityLabel.textContent = qualityInput.value;
 
+// Wert live anzeigen
 qualityInput.oninput = () => {
     qualityLabel.textContent = qualityInput.value;
 };
 
+// Erst rendern beim Loslassen
 qualityInput.onchange = () => {
     render();
 };
@@ -41,6 +43,7 @@ dropzone.ondragleave = () => {
 dropzone.ondrop = async (e) => {
     e.preventDefault();
     dropzone.classList.remove("dragover");
+
     files = [...e.dataTransfer.files];
     await prepareImages();
     await render();
@@ -131,6 +134,8 @@ async function render() {
         p.download.href = URL.createObjectURL(blob);
         p.download.download = file.name;
     }
+
+    preview.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 /* =========================
