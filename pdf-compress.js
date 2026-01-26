@@ -112,6 +112,7 @@ if (previewTop > sliderBottom) {
         behavior: "smooth"
     });
 }
+   }
 
 /* =========================
    ZIP DOWNLOAD
