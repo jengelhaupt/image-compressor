@@ -127,8 +127,8 @@ async function render() {
             const maxColors = 256;
             const colors = Math.max(2, Math.round(maxColors * quality / 100));
 
-            // UPNG komprimieren
-            const pngData = UPNG.encode([rgba.buffer], canvas.width, canvas.height, 0, colors);
+            // UPNG encode korrekt ([rgba], w, h, bitdepth 0=automatisch, palette size)
+            const pngData = UPNG.encode([rgba], canvas.width, canvas.height, 0, colors);
 
             blob = new Blob([pngData], { type: "image/png" });
 
