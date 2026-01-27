@@ -17,12 +17,10 @@ let zipFiles = [];
 ========================= */
 qualityLabel.textContent = qualityInput.value;
 
-// Wert live anzeigen
 qualityInput.oninput = () => {
     qualityLabel.textContent = qualityInput.value;
 };
 
-// Erst rendern beim Loslassen
 qualityInput.onchange = () => {
     render();
 };
@@ -99,13 +97,47 @@ async function prepareImages() {
 }
 
 /* =========================
+   RED-CHROMA SMOOTHING
+========================= */
+function smoothRedChannel(ctx, w, h, strength) {
+    const img = ctx.getImageData(0, 0, w, h);
+    const d = img.data;
+    const copy = new Uint8ClampedArray(d);
+
+    const radius = 1;
+
+    for (let y = radius; y < h - radius; y++) {
+        for (let x = radius; x < w - radius; x++) {
+            let sum = 0;
+            let count = 0;
+
+            for (let dy = -radius; dy <= radius; dy++) {
+                for (let dx = -radius; dx <= radius; dx++) {
+                    const i = ((y + dy) * w + (x + dx)) * 4;
+                    sum += copy[i]; // RED only
+                    count++;
+                }
+            }
+
+            const i = (y * w + x) * 4;
+            const avg = sum / count;
+
+            d[i] = d[i] * (1 - strength) + avg * strength;
+        }
+    }
+
+    ctx.putImageData(img, 0, 0);
+}
+
+/* =========================
    RENDER JPG
 ========================= */
 async function render() {
     if (!images.length) return;
 
     zipFiles = [];
-    const quality = Math.min(0.99, qualityInput.value / 100);
+    const qPercent = Number(qualityInput.value);
+    const quality = Math.min(0.99, qPercent / 100);
 
     for (let i = 0; i < images.length; i++) {
         const { file, img } = images[i];
@@ -114,9 +146,15 @@ async function render() {
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;
-
         const ctx = canvas.getContext("2d");
+
         ctx.drawImage(img, 0, 0);
+
+        // 🔴 nur bei niedriger Qualität eingreifen
+        if (qPercent < 75) {
+            const strength = Math.min(0.35, (75 - qPercent) / 100);
+            smoothRedChannel(ctx, canvas.width, canvas.height, strength);
+        }
 
         let blob = await new Promise((r) =>
             canvas.toBlob(r, "image/jpeg", quality)
@@ -130,25 +168,26 @@ async function render() {
 
         const saved = 100 - (blob.size / file.size) * 100;
         p.info.textContent =
-            `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+            `Original ${(file.size / 1024).toFixed(1)} KB → ` +
+            `Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
 
         p.download.href = URL.createObjectURL(blob);
         p.download.download = file.name;
     }
 
-const sliderBottom =
-    qualityWrapper.getBoundingClientRect().bottom + window.scrollY;
+    const sliderBottom =
+        qualityWrapper.getBoundingClientRect().bottom + window.scrollY;
 
-const previewTop =
-    preview.getBoundingClientRect().top + window.scrollY;
+    const previewTop =
+        preview.getBoundingClientRect().top + window.scrollY;
 
-if (previewTop > sliderBottom) {
-    window.scrollTo({
-        top: previewTop - qualityWrapper.offsetHeight - 40,
-        behavior: "smooth"
-    });
+    if (previewTop > sliderBottom) {
+        window.scrollTo({
+            top: previewTop - qualityWrapper.offsetHeight - 40,
+            behavior: "smooth"
+        });
+    }
 }
-   }
 
 /* =========================
    ZIP DOWNLOAD
