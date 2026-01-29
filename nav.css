@@ -24,15 +24,11 @@ body, html {
 
 ul { list-style: none } 
 li { display: block }
-strong {  
-  font-family: 'nanumgothic-extrabold-webfont';
-  font-weight: bold;}
 
 /* stroke */
 nav.stroke ul li a,
 nav.fill ul li a {
   position: relative;
-  font-family: 'righteous-regular'; Arial, Helvetica, sans-serif;
   font-size: 1em;
   letter-spacing: 2px;
 }
