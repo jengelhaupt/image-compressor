@@ -160,6 +160,7 @@ nav ul li a:before {
     nav a:target ~ ul,
     nav a:target ~ .close {
       display: inline-block;
+	position: fixed;
     }
   
     nav a:target ~ .close {
