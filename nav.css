@@ -1,3 +1,27 @@
+/*----- General Formating -----*/
+body, html {
+    font-family: 'nanumgothic-regular-webfont'; Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 5;
+    height: 100%;
+    width: 100%;
+    background-size: cover;
+    background-color: #ffffff;
+    color:#272727;
+    font-size: 1.0em;
+    line-height: 160%;
+  }
+  *, *:before, *:after {
+    box-sizing: border-box;
+  }
+
+  a:active, a:focus {outline: none;}
+  
+  main {
+    margin: 3em 1em;
+
+  }
+
 ul { list-style: none } 
 li { display: block }
 strong {  
