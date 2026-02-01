@@ -76,6 +76,15 @@ input[type=range] {
     text-decoration:none;
 }
 
+.tabs {
+    padding: 0;
+    display:  flex;
+    justify-content: center;
+    background: #271d34;
+    color: white;
+    font-size: 18px;
+}
+
 .tab {
     padding:15px 15px;
     cursor:pointer;
