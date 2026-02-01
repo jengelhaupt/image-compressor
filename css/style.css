@@ -94,6 +94,7 @@ input[type=range] {
 }
 .tab:hover {
     background:#f5f5f5;
+    color:#271d34;
 }
 
 .tab.active {
