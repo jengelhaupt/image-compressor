@@ -19,6 +19,7 @@ p, li {
     max-width: 900px !important;
     padding:10px;
     border-radius:8px;
+    margin: 0 auto !important;
 }
 
 .container-logo {
