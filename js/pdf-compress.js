@@ -17,7 +17,7 @@ const qualityLabel = document.getElementById("pdfVal");
 /* =========================
    STATE
 ========================= */
-let originalFiles = []; // Original-PDFs sichern
+let originalFiles = [];
 let pdfItems = [];
 let zipFiles = [];
 
@@ -71,10 +71,24 @@ async function preparePDFs() {
     infoDiv.className = "info";
     infoDiv.textContent = "Analysiere PDF…";
 
-    container.append(infoDiv);
+    // Fortschrittsanzeige
+    const progressDiv = document.createElement("div");
+    progressDiv.className = "progress";
+    progressDiv.style.width = "100%";
+    progressDiv.style.background = "#eee";
+    progressDiv.style.borderRadius = "4px";
+    progressDiv.style.marginTop = "4px";
+    const progressBar = document.createElement("div");
+    progressBar.style.height = "8px";
+    progressBar.style.width = "0%";
+    progressBar.style.background = "#4caf50";
+    progressBar.style.borderRadius = "4px";
+    progressDiv.appendChild(progressBar);
+
+    container.append(infoDiv, progressDiv);
     preview.appendChild(container);
 
-    pdfItems.push({ file, infoDiv });
+    pdfItems.push({ file, infoDiv, progressBar });
   }
 }
 
@@ -96,14 +110,14 @@ function getRasterScale(quality) {
 /* =========================
    KOMPRESSION / HYBRID
 ========================= */
-async function compressPDF(file, quality) {
+async function compressPDF(file, quality, progressCallback) {
   if (quality >= 90) {
-    // Hybrid: Text bleibt Text, Bilder leicht komprimiert
     const pdfBytes = await file.arrayBuffer();
     const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
 
     const pages = pdfDoc.getPages();
-    for (const page of pages) {
+    for (let i = 0; i < pages.length; i++) {
+      const page = pages[i];
       const xobjects = page.node.Resources?.XObject || {};
       for (const key of Object.keys(xobjects)) {
         try {
@@ -121,19 +135,18 @@ async function compressPDF(file, quality) {
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0);
 
-          const compressed = canvas.toDataURL("image/jpeg", 0.9); // leicht komprimiert
+          const compressed = canvas.toDataURL("image/jpeg", 0.9);
           const newImage = await pdfDoc.embedJpg(compressed);
           page.node.Resources.XObject.set(key, newImage.ref);
-        } catch(e) {
-          console.warn("Bild konnte nicht komprimiert werden:", e);
-        }
+        } catch(e){ console.warn("Bild konnte nicht komprimiert werden:", e); }
       }
+      // Fortschritt Callback
+      if(progressCallback) progressCallback(i + 1, pages.length);
     }
 
     const outBytes = await pdfDoc.save();
     return new Blob([outBytes], { type: "application/pdf" });
   } else {
-    // Raster-Modus: Text + Bilder rastern
     const scale = getRasterScale(quality);
     const bytes = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
@@ -153,6 +166,9 @@ async function compressPDF(file, quality) {
       const jpg = await newPdf.embedJpg(imgData);
       const newPage = newPdf.addPage([canvas.width, canvas.height]);
       newPage.drawImage(jpg, { x:0, y:0, width:canvas.width, height:canvas.height });
+
+      // Fortschritt Callback
+      if(progressCallback) progressCallback(i, pdf.numPages);
     }
 
     const outBytes = await newPdf.save();
@@ -169,12 +185,17 @@ async function render() {
 
   for (let i = 0; i < originalFiles.length; i++) {
     const file = originalFiles[i];
-    const { infoDiv } = pdfItems[i];
+    const { infoDiv, progressBar } = pdfItems[i];
 
-    infoDiv.textContent = "Komprimierung läuft...";
+    infoDiv.textContent = "Komprimiere…";
+    progressBar.style.width = "0%";
 
     try {
-      const blob = await compressPDF(file, quality);
+      const blob = await compressPDF(file, quality, (current, total) => {
+        const percent = Math.round((current / total) * 100);
+        progressBar.style.width = percent + "%";
+      });
+
       const origKB = (file.size/1024).toFixed(1);
       const newKB = (blob.size/1024).toFixed(1);
       infoDiv.textContent = `Größe: ${origKB} KB → ${newKB} KB`;
