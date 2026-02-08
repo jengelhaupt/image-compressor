@@ -1,131 +1,211 @@
+/* =========================
+   DEPENDENCIES
+========================= */
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js";
+
+/* =========================
+   DOM
+========================= */
 const dropzone = document.getElementById("dropzone");
 const fileInput = document.getElementById("fileInput");
 const preview = document.getElementById("preview");
 const zipBtn = document.getElementById("zipBtn");
 
-const qualityWrapper = document.getElementById("pdf");
-const controlInput = document.getElementById("pdfQ");
-const controlLabel = document.getElementById("pdfVal");
-
+/* =========================
+   STATE
+========================= */
 let files = [];
 let zipFiles = [];
 let pdfItems = [];
-
-/* =========================
-   CONTROL (optional)
-========================= */
-if (controlInput && controlLabel) {
-    controlLabel.textContent = controlInput.value;
-
-    controlInput.oninput = () => {
-        controlLabel.textContent = controlInput.value;
-    };
-}
 
 /* =========================
    DRAG & DROP
 ========================= */
 dropzone.onclick = () => fileInput.click();
 
-dropzone.ondragover = (e) => {
-    e.preventDefault();
-    dropzone.classList.add("dragover");
+dropzone.ondragover = e => {
+  e.preventDefault();
+  dropzone.classList.add("dragover");
 };
 
-dropzone.ondragleave = () => dropzone.classList.remove("dragover");
+dropzone.ondragleave = () =>
+  dropzone.classList.remove("dragover");
 
-dropzone.ondrop = async (e) => {
-    e.preventDefault();
-    dropzone.classList.remove("dragover");
+dropzone.ondrop = async e => {
+  e.preventDefault();
+  dropzone.classList.remove("dragover");
 
-    files = [...e.dataTransfer.files].filter(f => f.type === "application/pdf");
-    await preparePDFs();
-    await render();
+  files = [...e.dataTransfer.files].filter(f => f.type === "application/pdf");
+  await preparePDFs();
+  await render();
 };
 
 /* =========================
    FILE INPUT
 ========================= */
-fileInput.onchange = async (e) => {
-    files = [...e.target.files].filter(f => f.type === "application/pdf");
-    await preparePDFs();
-    await render();
+fileInput.onchange = async e => {
+  files = [...e.target.files].filter(f => f.type === "application/pdf");
+  await preparePDFs();
+  await render();
 };
 
 /* =========================
-   PREPARE PDF PREVIEW
+   PREVIEW
 ========================= */
 async function preparePDFs() {
-    pdfItems = [];
-    preview.innerHTML = "";
+  preview.innerHTML = "";
+  pdfItems = [];
 
-    files.forEach((file) => {
-        const container = document.createElement("div");
-        container.className = "previewItem";
+  for (const file of files) {
+    const container = document.createElement("div");
+    container.className = "previewItem";
 
-        const infoDiv = document.createElement("div");
-        infoDiv.className = "info";
+    const infoDiv = document.createElement("div");
+    infoDiv.className = "info";
 
-        const downloadLink = document.createElement("a");
-        downloadLink.className = "download";
-        downloadLink.textContent = "Datei herunterladen";
+    const downloadLink = document.createElement("a");
+    downloadLink.textContent = "Datei herunterladen";
 
-        container.append(infoDiv, downloadLink);
-        preview.appendChild(container);
+    container.append(infoDiv, downloadLink);
+    preview.appendChild(container);
 
-        pdfItems.push({ infoDiv, downloadLink, file });
-    });
+    pdfItems.push({ file, infoDiv, downloadLink });
+  }
 }
 
 /* =========================
-   RENDER PDF (Komprimieren)
+   TEXT VS SCAN DETECTION
+========================= */
+async function isTextPDF(file) {
+  const bytes = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+
+  let textLength = 0;
+
+  for (let i = 1; i <= Math.min(2, pdf.numPages); i++) {
+    const page = await pdf.getPage(i);
+    const text = await page.getTextContent();
+    textLength += text.items.map(i => i.str).join("").length;
+  }
+
+  return textLength > 100;
+}
+
+/* =========================
+   RASTERIZE SCAN PDF
+========================= */
+async function rasterizePDF(file, scale = 1.3, quality = 0.6) {
+  const bytes = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+  const images = [];
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const viewport = page.getViewport({ scale });
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    await page.render({ canvasContext: ctx, viewport }).promise;
+
+    images.push({
+      imgData: canvas.toDataURL("image/jpeg", quality),
+      width: canvas.width,
+      height: canvas.height
+    });
+  }
+
+  return images;
+}
+
+/* =========================
+   IMAGES → PDF
+========================= */
+async function imagesToPDF(images) {
+  const pdfDoc = await PDFLib.PDFDocument.create();
+
+  for (const img of images) {
+    const jpg = await pdfDoc.embedJpg(img.imgData);
+    const page = pdfDoc.addPage([img.width, img.height]);
+
+    page.drawImage(jpg, {
+      x: 0,
+      y: 0,
+      width: img.width,
+      height: img.height
+    });
+  }
+
+  return await pdfDoc.save();
+}
+
+/* =========================
+   SMART COMPRESSION
+========================= */
+async function compressSmart(file) {
+  const isText = await isTextPDF(file);
+
+  if (isText) {
+    const bytes = await file.arrayBuffer();
+    const pdf = await PDFLib.PDFDocument.load(bytes);
+    const out = await pdf.save({ compress: true });
+
+    return {
+      blob: new Blob([out], { type: "application/pdf" }),
+      label: "Text-PDF erkannt – keine Bildkomprimierung"
+    };
+  }
+
+  const images = await rasterizePDF(file);
+  const pdfBytes = await imagesToPDF(images);
+
+  return {
+    blob: new Blob([pdfBytes], { type: "application/pdf" }),
+    label: "Scan-PDF erkannt – Bildkomprimierung aktiv"
+  };
+}
+
+/* =========================
+   RENDER / COMPRESS
 ========================= */
 async function render() {
-    if (!pdfItems.length) return;
+  zipFiles = [];
 
-    zipFiles = [];
+  for (const item of pdfItems) {
+    const { file, infoDiv, downloadLink } = item;
 
-    for (let i = 0; i < pdfItems.length; i++) {
-        const { file, infoDiv, downloadLink } = pdfItems[i];
+    infoDiv.textContent = "Analysiere PDF…";
 
-        const bytes = await file.arrayBuffer();
-        const pdf = await PDFLib.PDFDocument.load(bytes);
-        const outBytes = await pdf.save({ compress: true });
+    const originalKB = (file.size / 1024).toFixed(1);
+    const { blob, label } = await compressSmart(file);
+    const newKB = (blob.size / 1024).toFixed(1);
 
-        const blob = new Blob([outBytes]);
-        zipFiles.push({ name: file.name, blob });
+    infoDiv.textContent = `${label} | ${originalKB} KB → ${newKB} KB`;
 
-        infoDiv.textContent = `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(blob.size / 1024).toFixed(1)} KB`;
+    downloadLink.href = URL.createObjectURL(blob);
+    downloadLink.download = file.name;
 
-        downloadLink.href = URL.createObjectURL(blob);
-        downloadLink.download = file.name;
-    }
-
-
-const sliderBottom = qualityWrapper.getBoundingClientRect().bottom + window.scrollY;
-const previewTop = preview.getBoundingClientRect().top + window.scrollY;
-const offset = 16; // anpassbarer Abstand
-
-if (previewTop > sliderBottom) {
-    window.scrollTo({
-        top: previewTop - qualityWrapper.offsetHeight - offset,
-        behavior: "smooth"
-    });
+    zipFiles.push({ name: file.name, blob });
+  }
 }
-   }
 
 /* =========================
    ZIP DOWNLOAD
 ========================= */
 zipBtn.onclick = async () => {
-    if (!zipFiles.length) return;
+  if (!zipFiles.length) return;
 
-    const zip = new JSZip();
-    zipFiles.forEach(f => zip.file(f.name, f.blob));
+  const zip = new JSZip();
+  zipFiles.forEach(f => zip.file(f.name, f.blob));
 
-    const blob = await zip.generateAsync({ type: "blob" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `pdf-komprimiert.zip`;
-    a.click();
+  const blob = await zip.generateAsync({ type: "blob" });
+  const a = document.createElement("a");
+
+  a.href = URL.createObjectURL(blob);
+  a.download = "pdf-komprimiert.zip";
+  a.click();
 };
