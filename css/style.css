@@ -141,7 +141,4 @@ input[type=range] {
   position: relative;
   background: #ffffff;
   z-index: 2;
-  margin-top: -80vh;
-  padding-top: 80vh;
-  box-shadow: 0 -30px 60px rgba(0,0,0,0.08);
 }
