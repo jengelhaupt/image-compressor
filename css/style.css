@@ -32,6 +32,10 @@ p, li {
     text-align:center;
     cursor:pointer;
     margin-bottom:20px;
+
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
 }
 
 .dropzone.dragover {
@@ -120,4 +124,19 @@ input[type=range] {
 
 #breadcrumbs a:hover {
     text-decoration:underline;
+}
+
+////NEU Abschnitt Test////
+
+.wrapper {
+  position: relative;
+}
+
+.text {
+  position: sticky;
+  top: 0;
+  background: #ffffff; /* komplett deckend */
+  padding: 4rem;
+  z-index: 2;
+  min-height: 100vh;
 }
