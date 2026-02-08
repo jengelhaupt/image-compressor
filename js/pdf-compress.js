@@ -75,9 +75,12 @@ async function preparePDFs() {
     const progressDiv = document.createElement("div");
     progressDiv.className = "progress";
     progressDiv.style.width = "100%";
-    progressDiv.style.background = "#eee";
+    progressDiv.style.background = "transparent";
     progressDiv.style.borderRadius = "4px";
     progressDiv.style.marginTop = "4px";
+    progressDiv.style.overflow = "hidden";
+    progressDiv.style.display = "none";
+     
     const progressBar = document.createElement("div");
     progressBar.style.height = "8px";
     progressBar.style.width = "0%";
@@ -189,6 +192,7 @@ async function render() {
 
     infoDiv.textContent = "Komprimiere…";
     progressBar.style.width = "0%";
+    progressDiv.style.display = "block";
 
     try {
       const blob = await compressPDF(file, quality, (current, total) => {
@@ -202,7 +206,7 @@ async function render() {
 
       progressBar.style.width = "100%";
       setTimeout(() => {
-      progressBar.style.display = "none";
+      progressDiv.style.display = "none"; 
       }, 500); // 0,5 Sekunden Delay, damit der Balken 100% kurz sichtbar bleibt
        
       zipFiles.push({ name: file.name, blob });
