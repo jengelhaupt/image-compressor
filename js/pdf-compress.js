@@ -58,7 +58,7 @@ fileInput.onchange = async e => {
 };
 
 /* =========================
-   PREVIEW
+   PREVIEW (ohne Download-Link)
 ========================= */
 async function preparePDFs() {
   preview.innerHTML = "";
@@ -71,13 +71,10 @@ async function preparePDFs() {
     infoDiv.className = "info";
     infoDiv.textContent = "Analysiere PDF…";
 
-    const downloadLink = document.createElement("a");
-    downloadLink.textContent = "Datei herunterladen";
-
-    container.append(infoDiv, downloadLink);
+    container.append(infoDiv);
     preview.appendChild(container);
 
-    pdfItems.push({ file, infoDiv, downloadLink });
+    pdfItems.push({ file, infoDiv });
   }
 }
 
@@ -172,7 +169,7 @@ async function render() {
 
   for (let i = 0; i < originalFiles.length; i++) {
     const file = originalFiles[i];
-    const { infoDiv, downloadLink } = pdfItems[i];
+    const { infoDiv } = pdfItems[i];
 
     infoDiv.textContent = "Komprimiere…";
 
@@ -181,9 +178,6 @@ async function render() {
       const origKB = (file.size/1024).toFixed(1);
       const newKB = (blob.size/1024).toFixed(1);
       infoDiv.textContent = `Größe: ${origKB} KB → ${newKB} KB`;
-
-      downloadLink.href = URL.createObjectURL(blob);
-      downloadLink.download = file.name;
 
       zipFiles.push({ name: file.name, blob });
     } catch(err) {
