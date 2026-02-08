@@ -200,6 +200,11 @@ async function render() {
       const newKB = (blob.size/1024).toFixed(1);
       infoDiv.textContent = `Größe: ${origKB} KB → ${newKB} KB`;
 
+      progressBar.style.width = "100%";
+      setTimeout(() => {
+      progressBar.style.display = "none";
+      }, 500); // 0,5 Sekunden Delay, damit der Balken 100% kurz sichtbar bleibt
+       
       zipFiles.push({ name: file.name, blob });
     } catch(err) {
       infoDiv.textContent = "Fehler bei der Verarbeitung";
