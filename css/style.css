@@ -27,6 +27,7 @@ p, li {
 }
 
 .dropzone {
+    background: #fafafa;
     border:2px dashed #aaa;
     padding:40px;
     text-align:center;
@@ -131,9 +132,8 @@ input[type=range] {
 .sticky-dropzone {
   position: sticky;
   top: 0;
-  min-height: 100vh;
   z-index: 1;
-  padding-bottom: 40px;
+  padding-bottom: 60px;
 }
 
 
@@ -141,5 +141,7 @@ input[type=range] {
   position: relative;
   background: #ffffff;
   z-index: 2;
-  margin-top: -100vh;
-  padding-top: 100vh;
+  margin-top: -80vh;
+  padding-top: 80vh;
+  box-shadow: 0 -30px 60px rgba(0,0,0,0.08);
+}
