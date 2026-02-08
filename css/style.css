@@ -132,7 +132,6 @@ input[type=range] {
   position: sticky;
   top: 0;
   min-height: 100vh;
-  background: #ffffff;
   z-index: 1;
   padding-bottom: 40px;
 }
