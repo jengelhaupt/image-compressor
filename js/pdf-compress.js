@@ -171,7 +171,7 @@ async function render() {
     const file = originalFiles[i];
     const { infoDiv } = pdfItems[i];
 
-    infoDiv.textContent = "Komprimiere…";
+    infoDiv.textContent = "Komprimierung läuft...";
 
     try {
       const blob = await compressPDF(file, quality);
