@@ -17,9 +17,9 @@ const qualityLabel = document.getElementById("pdfVal");
 /* =========================
    STATE
 ========================= */
-let files = [];
-let zipFiles = [];
+let originalFiles = []; // Original-PDFs sichern
 let pdfItems = [];
+let zipFiles = [];
 
 /* =========================
    SLIDER
@@ -28,8 +28,7 @@ if (qualityInput && qualityLabel) {
   qualityLabel.textContent = qualityInput.value;
   qualityInput.oninput = async () => {
     qualityLabel.textContent = qualityInput.value;
-    // Slider live reagieren lassen, nur wenn Dateien vorhanden sind
-    if (files.length > 0) await render();
+    if (originalFiles.length > 0) await render(); // live rendern
   };
 }
 
@@ -37,17 +36,23 @@ if (qualityInput && qualityLabel) {
    DRAG & DROP / FILE INPUT
 ========================= */
 dropzone.onclick = () => fileInput.click();
-dropzone.ondragover = e => { e.preventDefault(); dropzone.classList.add("dragover"); };
+
+dropzone.ondragover = e => { 
+  e.preventDefault(); 
+  dropzone.classList.add("dragover"); 
+};
 dropzone.ondragleave = () => dropzone.classList.remove("dragover");
+
 dropzone.ondrop = async e => { 
   e.preventDefault(); 
   dropzone.classList.remove("dragover"); 
-  files = [...e.dataTransfer.files].filter(f => f.type === "application/pdf"); 
+  originalFiles = [...e.dataTransfer.files].filter(f => f.type === "application/pdf"); 
   await preparePDFs(); 
   await render(); 
 };
+
 fileInput.onchange = async e => { 
-  files = [...e.target.files].filter(f => f.type === "application/pdf"); 
+  originalFiles = [...e.target.files].filter(f => f.type === "application/pdf"); 
   await preparePDFs(); 
   await render(); 
 };
@@ -58,7 +63,7 @@ fileInput.onchange = async e => {
 async function preparePDFs() {
   preview.innerHTML = "";
   pdfItems = [];
-  for (const file of files) {
+  for (const file of originalFiles) {
     const container = document.createElement("div");
     container.className = "previewItem";
 
@@ -165,8 +170,10 @@ async function render() {
   zipFiles = [];
   const quality = qualityInput ? parseInt(qualityInput.value) : 90;
 
-  for (const item of pdfItems) {
-    const { file, infoDiv, downloadLink } = item;
+  for (let i = 0; i < originalFiles.length; i++) {
+    const file = originalFiles[i];
+    const { infoDiv, downloadLink } = pdfItems[i];
+
     infoDiv.textContent = "Komprimiere…";
 
     try {
