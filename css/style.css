@@ -134,11 +134,14 @@ input[type=range] {
   z-index: 1;
 }
 
+.text-wrapper {
+  position: relative;
+}
 
 .text {
   position: sticky;
   top: 0;
   background: #fff;
-  z-index: 5;
+  z-index: 10;
   padding: 60px 0;
 }
