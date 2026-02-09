@@ -129,18 +129,17 @@ input[type=range] {
   position: relative;
 }
 
-.sticky-dropzone {
-  position: sticky;
-  top: 0;
+.dropzone-area {
+  position: relative;
   z-index: 1;
-  padding-bottom: 60px;
 }
 
 
 .text {
-  position: relative;
+  position: sticky;
+top: 0;
   background: #fff;
   z-index: 2;
-  padding-top: 40px;
+  padding-top: 60px;
   padding-bottom: 40px;
 }
