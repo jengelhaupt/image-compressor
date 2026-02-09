@@ -1,4 +1,4 @@
-body {
+itvbody {
     font-family: Open Sans, Arial, sans-serif;
 }
 
@@ -130,16 +130,13 @@ input[type=range] {
 }
 
 .dropzone-area {
-  position: relative;
+  position: sticky;
   z-index: 1;
 }
 
-.text-wrapper {
-  position: relative;
-}
 
 .text {
-  position: sticky;
+  position: relative;
   top: 0;
   background: #fff;
   z-index: 10;
