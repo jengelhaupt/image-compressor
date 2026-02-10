@@ -19,6 +19,7 @@ p, li {
     max-width: 900px !important;
     padding:10px;
     border-radius:8px;
+    overflow: visible !important;
 }
 
 .container-logo {
@@ -130,13 +131,13 @@ input[type=range] {
 }
 
 .dropzone-area {
-  position: sticky;
+  position: relative;
   z-index: 1;
 }
 
 
 .text {
-  position: relative;
+  position: sticky;
   top: 0;
   background: #fff;
   z-index: 10;
