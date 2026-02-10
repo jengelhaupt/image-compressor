@@ -19,7 +19,6 @@ p, li {
     max-width: 900px !important;
     padding:10px;
     border-radius:8px;
-    overflow: visible !important;
 }
 
 .container-logo {
@@ -123,21 +122,3 @@ input[type=range] {
 #breadcrumbs a:hover {
     text-decoration:underline;
 }
-
-////NEU Abschnitt Test////
-
-.wrapper {
-  display: grid;
-}
-
-.dropzone-area {
-grid-row: 1;
-}
-
-
-.text {
-grid-row: 1;
-  z-index: 10;
-  background: #fff;
-}
-
