@@ -137,9 +137,18 @@ input[type=range] {
 
 
 .text {
-  position: sticky;
-  top: 0;
-  background: #fff;
+  position: relative;
   z-index: 10;
-  padding: 60px 0;
+  background: #fff;
+
+  /* Überlagerung */
+  margin-top: -300px;      /* optische Überlappung */
+  padding-top: 300px;
+}
+
+@media (max-width: 991px) {
+  .seo-overlay {
+    margin-top: 0;
+    padding-top: 0;
+  }
 }
