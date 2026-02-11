@@ -276,7 +276,7 @@ async function render() {
             smoothChromaYCbCr(ctx, canvas.width, canvas.height, strength);
         }
 
-        if (qPercent < 75) {
+        if (qPercent < 49) {
             sharpenEdges(ctx, canvas.width, canvas.height, 0.22, 6);
         }
 
