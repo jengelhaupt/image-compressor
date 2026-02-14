@@ -122,3 +122,9 @@ input[type=range] {
 #breadcrumbs a:hover {
     text-decoration:underline;
 }
+
+@media (max-width: 768px) {
+#firstnav {
+    display: none;
+}
+}
