@@ -4,6 +4,9 @@
         <loc>https://free-img-compressor.de</loc>
     </url>
     <url>
+        <loc>https://free-img-compressor.de/compress</loc>
+    </url>
+    <url>
         <loc>https://free-img-compressor.de/compress/jpg</loc>
     </url>
     <url>
@@ -21,7 +24,7 @@
     <url>
         <loc>https://free-img-compressor.de/nutzungsbedingungen.html</loc>
     </url>
-        <url>
+    <url>
         <loc>https://free-img-compressor.de/about-us.html</loc>
     </url>
 </urlset>
