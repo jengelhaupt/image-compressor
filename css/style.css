@@ -179,6 +179,7 @@ input[type=range] {
     }
 
     .tab {
+        font-color: black;
         width:100%;
         padding:15px 0;
         border:none;
