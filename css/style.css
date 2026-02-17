@@ -152,7 +152,7 @@ input[type=range] {
         position:absolute;
         color:black;
         right:15px;
-        top:-100px;   /* 100px nach oben */
+        top:-120px;   /* 100px nach oben */
         font-size:26px;
         cursor:pointer;
         z-index:1001;
