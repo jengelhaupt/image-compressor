@@ -185,6 +185,11 @@ input[type=range] {
         border:none;
     }
 
+    .tab:hover {
+    background: #e9ecef;
+    color: black;
+}
+
     #menu-toggle:checked + .burger + .tabs {
         transform:translateX(0);
     }
