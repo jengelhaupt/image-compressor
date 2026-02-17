@@ -142,10 +142,10 @@ input[type=range] {
     cursor:pointer;
     text-align:center;
 }
-
+@media (max-width:768px){
     nav {
         position:relative;
-        background:#271d34;
+        background:#e9ecef;
     }
 
     .burger {
@@ -166,6 +166,7 @@ input[type=range] {
         height:100vh;
         width:250px;
         background:#271d34;
+        opacity: 0.5;
 
         flex-direction:column;
         align-items:flex-start;
