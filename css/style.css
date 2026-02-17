@@ -142,7 +142,7 @@ input[type=range] {
     cursor:pointer;
     text-align:center;
 }
-@media (max-width:768px){
+@media (max-width:430px){
     nav {
         position:relative;
     }
