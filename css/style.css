@@ -150,10 +150,10 @@ input[type=range] {
     .burger {
         display:block;
         position:absolute;
+        color:black;
         right:15px;
         top:-100px;   /* 100px nach oben */
         font-size:26px;
-        color:white;
         cursor:pointer;
         z-index:1001;
         background:#e9ecef !important;
@@ -165,7 +165,7 @@ input[type=range] {
         right:0;
         height:100vh;
         width:250px;
-        background:#271d34;
+        background:#e9ecef !important;
 
         flex-direction:column;
         align-items:flex-start;
@@ -175,6 +175,7 @@ input[type=range] {
         transform:translateX(100%);
         transition:transform 0.3s ease;
         z-index:1000;
+        opacity: 0.9;
     }
 
     .tab {
