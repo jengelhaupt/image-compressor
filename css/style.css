@@ -129,8 +129,40 @@ input[type=range] {
     text-decoration:underline;
 }
 
+#menu-toggle {
+    display:none;
+}
+
+.burger {
+    display:none;
+    font-size:26px;
+    color:white;
+    background:#271d34;
+    padding:10px;
+    cursor:pointer;
+    text-align:center;
+}
+
 @media (max-width: 768px) {
 #firstnav {
     display: none;
 }
+        .burger {
+        display:block;
+    }
+
+    .tabs {
+        display:none;
+        flex-direction:column;
+        text-align:center;
+    }
+
+    .tab {
+        border-bottom:none;
+    }
+
+    #menu-toggle:checked + .burger + .tabs {
+        display:flex;
+    }
 }
+
