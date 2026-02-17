@@ -188,6 +188,7 @@ input[type=range] {
     .tab:hover {
     background: #e9ecef;
     color: black;
+    font-weight: bold;
 }
 
     #menu-toggle:checked + .burger + .tabs {
