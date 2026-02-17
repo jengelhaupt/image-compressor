@@ -166,7 +166,7 @@ input[type=range] {
         height:100vh;
         width:250px;
         background:#e9ecef !important;
-
+        color: black !important;
         flex-direction:column;
         align-items:flex-start;
         padding-top:80px;
