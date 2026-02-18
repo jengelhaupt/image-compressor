@@ -199,8 +199,6 @@ input[type=range] {
 @media (min-width:431px){
     .banner {
         display: none;
-        display: flex; 
-        justify-content: center; 
     }
     
     #nav {
