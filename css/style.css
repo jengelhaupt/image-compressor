@@ -200,4 +200,7 @@ input[type=range] {
     .banner {
         display: none;
     }
+    #nav{
+        display: none;
+    }
 }
