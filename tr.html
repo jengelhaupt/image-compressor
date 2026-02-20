@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index,follow">
+<title>Bilder online kostenlos komprimieren | free-img-compressor.de</title>
+<meta name="description" content="Bilder & PDFs kostenlos online komprimieren. JPG, PNG, WebP & PDF verkleinern – sicher, schnell, ohne Anmeldung & ohne Speicherung.">
+    <link rel="canonical" href="https://free-img-compressor.de/tr">
+<meta property="og:url" content="https://free-img-compressor.de/tr">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=b183f83">
+<link  rel="icon" type="image/x-icon" href="https://free-img-compressor.de/media/favicon.svg" />
+<link  rel="shortcut icon" type="image/x-icon" href="https://free-img-compressor.de/media/favicon.svg" />
+<link rel="alternate" hreflang="de" href="https://free-img-compressor.de" />
+<link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/" />
+<link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/" />
+    <!-- MODE FEST VORGEGEBEN -->
+<script>
+  const MODE = "jpg";
+</script>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9CKX7Z8CV9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-9CKX7Z8CV9');
+</script>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
+</head>
+
+<body>
+   <div class="container-logo">
+        <div class="row">
+                <div class="col-md-4"></div>
+    <div class="col-12 col-md-4">
+          <a href="https://free-img-compressor.de/tr/"><img src="https://free-img-compressor.de/media/image-compressor_pfade.svg" style="width: 75%; display: flex; margin: 0 auto;" alt="Logo - Ücretsiz Resim Sıkıştırma"></a>
+
+                <div class="col-md-4"></div>
+        </div></div></div>
+
+    <div class="banner" style="background:#271d34; padding: 15px;">  
+      <div style="display: flex; justify-content: center;">
+      <a href="https://free-img-compressor.de/tr/compress/jpg" style="text-decoration: none; color: white; padding: 0 10px; font-size: 10pt" title="JPEG Resimleri Sıkıştır">JPG</a>
+      <a href="https://free-img-compressor.de/tr/compress/webp" style="text-decoration: none; color: white; padding: 0 10px; font-size: 10pt" title="WebP Resimleri Sıkıştır">WebP</a>
+      <a href="https://free-img-compressor.de/tr/compress/png" style="text-decoration: none; color: white; padding: 0 10px; font-size: 10pt" title="PNG Resimleri Sıkıştır">PNG</a>
+    </div>    
+    </div>
+
+<nav>
+  <input type="checkbox" id="menu-toggle">
+  <label for="menu-toggle" class="burger">☰</label>
+
+  <div class="tabs">
+      <a class="tab" href="https://free-img-compressor.de/tr/compress"><strong>Resim Sıkıştır:</strong></a>
+      <a class="tab" href="https://free-img-compressor.de/tr/compress/jpg" title="JPEG Resimleri Sıkıştır">JPG</a>
+      <a class="tab" href="https://free-img-compressor.de/tr/compress/webp" title="WebP Resimleri Sıkıştır">WebP</a>
+      <a class="tab" href="https://free-img-compressor.de/tr/compress/png" title="PNG Resimleri Sıkıştır">PNG</a>
+      <a class="tab" href="https://free-img-compressor.de/tr/compress/pdf" title="PDF Dosyalarını Sıkıştır">PDF</a>
+      <a class="tab" href="https://free-img-compressor.de/tr/about-us" id="nav">Hakkımda</a>
+  </div>
+</nav>
+
+<div class="container col-md-10">
+    <div id="breadcrumbs">
+        <a href="https://free-img-compressor.de/tr/">Ana Sayfa</a>
+    </div>
+        
+<h1>Resim ve PDF Dosyalarını Hızlıca Sıkıştırın</h1>
+
+<div class="dropzone" id="dropzone">
+   <div class="container col-md-4">
+       <img src="https://free-img-compressor.de/media/upload_logo.svg" alt="Yükle" width="30%"> 
+   </div>
+
+    <p>JPG dosyalarını buraya bırakın</p><br>
+
+    <h3 style="font-size: 18px !important;">
+        <strong>JPG resimlerinizi bu kadar kolay sıkıştırın.</strong>
+    </h3>
+
+        1. JPG dosyalarını yükleyin (tıklayarak veya sürükle & bırak).<br>
+        2. İstediğiniz JPG kalite seviyesini seçin.<br>
+        3. Sıkıştırılmış resimleri indirin.
+    
+    <input type="file" id="fileInput"
+           accept="image/jpeg"
+           multiple hidden>
+</div>
+
+<div class="tabContent active" style="padding-bottom: 30px;" id="jpg">
+    <label class="label">JPG Kalitesi: <span id="jpgVal">70</span>%</label>
+    <input type="range" id="jpgQ" min="10" max="100" step="1" value="70">
+</div>
+
+<button id="zipBtn">Tüm Sonuçları ZIP Olarak İndir</button>
+<div id="preview"></div>
+</div>
+
+<div class="container col-10 col-md-12" style="padding: 30px 10px 30px 10px;">
+
+<h3 style="background: #8080801c; padding: 10px; font-weight:bold;">
+Ücretsiz Online Resim & PDF Sıkıştırma – Hızlı, Güvenli ve Kayıt Gerektirmez
+</h3>
+
+<p><strong>free-img-compressor.de</strong>, JPG, PNG, WebP ve PDF dosyaları için ücretsiz bir online sıkıştırma aracıdır. 
+Sadece birkaç tıklama ile dosyalarınızı küçültebilirsiniz – kalite kaybı olmadan, kayıt olmadan ve gizli ücretler olmadan.</p>
+
+<p><strong>%100 Güvenli:</strong> Dosyalarınız kaydedilmez.</p>
+
+<p>Gizliliğiniz bizim için önemlidir. Yüklenen dosyalar hiçbir yerde kalıcı olarak saklanmaz. 
+Sıkıştırılmış resimlerinizi veya PDF dosyalarınızı indirdikten sonra otomatik olarak silinir. 
+Hiçbir veri paylaşımı, depolama veya içerik analizi yapılmaz.</p>
+
+<h3 style="background: #8080801c; padding: 10px; font-weight:bold;">
+Neden Resimleri Sıkıştırmalısınız?
+</h3>
+
+<p><strong>Resim sıkıştırmanın birçok avantajı vardır:</strong></p>
+<ul>
+<li>Daha hızlı web sitesi yükleme süreleri</li>
+<li>Google'da daha iyi SEO performansı (WebP formatı önerilir, eğer CMS sisteminiz destekliyorsa)</li>
+<li>Daha hızlı yükleme ve indirme</li>
+<li>Web, sosyal medya ve e-posta için optimize edilmiş görseller</li>
+<li>Özellikle web siteleri, bloglar ve e-ticaret siteleri için iyi bir resim sıkıştırma kullanıcı deneyimi ve sıralama açısından çok önemlidir.</li>
+</ul>
+
+<h3 style="background: #8080801c; padding: 10px; font-weight:bold;">
+Kaliteyi Kendiniz Belirleyin – Kaydırıcı ile
+</h3>
+
+<p><strong>free-img-compressor.de</strong> ile tam kontrol sizde.</p>
+<p>Kalite kaydırıcısı sayesinde sıkıştırma seviyesini istediğiniz gibi ayarlayabilirsiniz – maksimum kalite veya maksimum dosya boyutu azaltma arasında seçim yapabilirsiniz.</p>
+
+<h3 style="background: #8080801c; padding: 10px; font-weight:bold;">
+Tamamen Ücretsiz – Limitsiz
+</h3>
+
+<p><strong>Bu proje %100 ücretsizdir.</strong> 
+Kayıt yok, filigran yok, premium sürüm yok ve gizli sınırlamalar yoktur. 
+Dosyalarınızı yükleyin, sıkıştırın ve indirin.</p>
+
+<h3 style="background: #8080801c; padding: 10px; font-weight:bold;">
+Desteklenen Dosya Formatları
+</h3>
+
+<p>Şu anda aşağıdaki formatlar desteklenmektedir:</p>
+
+<p><a href="https://free-img-compressor.de/tr/compress/jpg">JPG / JPEG</a></p>
+<p><a href="https://free-img-compressor.de/tr/compress/png">PNG</a></p>
+<p><a href="https://free-img-compressor.de/tr/compress/webp">JPG'den WebP'ye Dönüştürme</a></p>
+<p><a href="https://free-img-compressor.de/tr/compress/pdf">PDF</a></p>
+
+<p>Site geliştirme aşamasındadır. Gelecekte yeni formatlar eklenebilir.</p>
+
+</div>
+
+<script>
+window.addEventListener("load", function(){
+  window.cookieconsent.initialise({
+    "palette": {
+      "popup": { "background": "#000" },
+      "button": { "background": "#fff" }
+    },
+    "theme": "classic",
+    "content": {
+      "message": "Bu web sitesi size en iyi deneyimi sunmak için çerezler kullanır.",
+      "dismiss": "Anladım",
+      "link": "Daha fazla bilgi",
+      "href": "/tr/datenschutz.html"
+    }
+  })
+});
+</script>
+
+<footer>
+<div style="background:#271d34; color: white; padding:40px;">
+<div class="row">
+<div class="col-2"></div>
+<div class="col-8 col-md-12">
+<p style="text-align: center; color: white; font-weight: bold; line-height: 2em;">
+<a href="https://free-img-compressor.de/tr/about-us.html" style="text-decoration:none; color:white;" title="Hakkımızda">Hakkımızda</a> |
+<a href="https://free-img-compressor.de/tr/nutzungsbedingungen.html" style="text-decoration:none; color:white;" title="Kullanım Şartları">Kullanım Şartları</a> |
+<a href="https://free-img-compressor.de/tr/datenschutz.html" style="text-decoration:none; color:white;" title="Gizlilik Politikası">Gizlilik Politikası</a>
+</p>
+</div>
+<div class="col-2"></div>
+</div>
+</div>
+</footer>
+
+</body>
+</html>
