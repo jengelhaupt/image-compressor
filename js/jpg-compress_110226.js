@@ -67,6 +67,41 @@ fileInput.onchange = async (e) => {
     await render();
 };
 
+/* =========================
+   LANGUAGE
+========================= */
+
+// Aktuelle Sprache (z.B. "de" oder "tr")
+let currentLang = "de";
+
+// Übersetzungen
+const translations = {
+    de: {
+        download: "Datei herunterladen"
+    },
+    tr: {
+        download: "Dosyayı indir"
+    }
+};
+
+// Übersetzungsfunktion
+function t(key) {
+    return translations[currentLang][key] || key;
+}
+
+// Optional: Sprache ändern
+function setLanguage(lang) {
+    currentLang = lang;
+    updateDownloadButtons();
+}
+
+// Aktualisiert alle Download-Buttons
+function updateDownloadButtons() {
+    document.querySelectorAll(".download").forEach(btn => {
+        btn.textContent = t("download");
+    });
+}
+
 /* =====================================================
    PREPARE IMAGES
 ===================================================== */
@@ -99,7 +134,7 @@ async function prepareImages() {
 
         const download = document.createElement("a");
         download.className = "download";
-        download.textContent = "Datei herunterladen";
+        download.textContent = t("download");
 
         container.append(originalImg, compressedImg, info, download);
         preview.appendChild(container);
