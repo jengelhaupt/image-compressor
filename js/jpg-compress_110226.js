@@ -71,7 +71,9 @@ fileInput.onchange = async (e) => {
    LANGUAGE
 ========================= */
 
-let currentLang = navigator.language.startsWith("tr") ? "tr" : "de";
+let currentLang = document.documentElement.lang
+    .toLowerCase()
+    .startsWith("tr") ? "tr" : "de";
 
 const translations = {
     de: {
