@@ -72,7 +72,7 @@ fileInput.onchange = async (e) => {
 ========================= */
 
 // Aktuelle Sprache (z.B. "de" oder "tr")
-let currentLang = "de";
+let currentLang = navigator.language.startsWith("tr") ? "tr" : "de";
 
 // Übersetzungen
 const translations = {
