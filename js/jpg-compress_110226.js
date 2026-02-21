@@ -71,10 +71,8 @@ fileInput.onchange = async (e) => {
    LANGUAGE
 ========================= */
 
-// Aktuelle Sprache (z.B. "de" oder "tr")
 let currentLang = navigator.language.startsWith("tr") ? "tr" : "de";
 
-// Übersetzungen
 const translations = {
     de: {
         download: "Datei herunterladen"
@@ -84,18 +82,15 @@ const translations = {
     }
 };
 
-// Übersetzungsfunktion
 function t(key) {
     return translations[currentLang][key] || key;
 }
 
-// Optional: Sprache ändern
 function setLanguage(lang) {
     currentLang = lang;
     updateDownloadButtons();
 }
 
-// Aktualisiert alle Download-Buttons
 function updateDownloadButtons() {
     document.querySelectorAll(".download").forEach(btn => {
         btn.textContent = t("download");
