@@ -60,6 +60,38 @@ fileInput.onchange = async (e) => {
 };
 
 /* =========================
+   LANGUAGE
+========================= */
+
+let currentLang = document.documentElement.lang
+    .toLowerCase()
+    .startsWith("tr") ? "tr" : "de";
+
+const translations = {
+    de: {
+        download: "Datei herunterladen"
+    },
+    tr: {
+        download: "Dosyayı indir"
+    }
+};
+
+function t(key) {
+    return translations[currentLang][key] || key;
+}
+
+function setLanguage(lang) {
+    currentLang = lang;
+    updateDownloadButtons();
+}
+
+function updateDownloadButtons() {
+    document.querySelectorAll(".download").forEach(btn => {
+        btn.textContent = t("download");
+    });
+}
+
+/* =========================
    PREPARE IMAGES
 ========================= */
 async function prepareImages() {
@@ -89,7 +121,7 @@ async function prepareImages() {
 
         const download = document.createElement("a");
         download.className = "download";
-        download.textContent = "Datei herunterladen";
+        download.textContent = t("download");
 
         container.append(originalImg, compressedImg, info, download);
         preview.appendChild(container);
