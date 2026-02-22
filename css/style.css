@@ -61,15 +61,12 @@ p, li {
 .dz-error {
     position: absolute;
     top: 10px;
-    width: 90%;
-    text-align: center;
     background: #d93025;
     color: white;
     padding: 6px 12px;
-    border-radius: 6px;
+    border-radius: 4px;
     font-size: 0.85rem;
     font-weight: 600;
-
     opacity: 0;
     animation: fadeIn 0.5s ease forwards;
     pointer-events: none;
