@@ -61,7 +61,7 @@ p, li {
 .dz-error {
     position: absolute;
     top: 8px;
-    left: 50%;
+    left: 75%;
     transform: translateX(-50%);
     
     background: #d93025;
@@ -72,7 +72,7 @@ p, li {
     font-weight: 600;
 
     opacity: 0;
-    animation: fadeIn 0.3s ease forwards;
+    animation: fadeIn 0.5s ease forwards;
     pointer-events: none;
 }
 
