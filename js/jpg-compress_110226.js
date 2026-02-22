@@ -32,7 +32,7 @@ function showDropzoneError(message) {
 
     setTimeout(() => {
         error.remove();
-    }, 3000);
+    }, 5000);
 }
 
 /* =====================================================
