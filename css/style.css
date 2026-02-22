@@ -45,6 +45,18 @@ p, li {
     background:#eef;
 }
 
+.dz-error {
+    margin-top: 10px;
+    background: red;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+#dropzone.error {
+    border-color: #d93025;
+}
+
 input[type=range] {
     width:100%;
 }
@@ -66,12 +78,6 @@ input[type=range] {
     object-fit:contain;
     background:#fff;
     border:1px solid #ccc;
-}
-
-.previewItem.error {
-    color: red;
-    font-weight: bold;
-    margin: 10px 0;
 }
 
 .info {
