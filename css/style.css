@@ -68,6 +68,12 @@ input[type=range] {
     border:1px solid #ccc;
 }
 
+.previewItem.error {
+    color: red;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
 .info {
     grid-column:span 2;
     font-size:14px;
