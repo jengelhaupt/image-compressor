@@ -25,6 +25,10 @@ function showDropzoneError(message) {
     error.textContent = message;
 
     dropzone.appendChild(error);
+   
+    dropzone.classList.remove("flash"); 
+    void dropzone.offsetWidth; 
+    dropzone.classList.add("flash");
 
     setTimeout(() => {
         error.remove();
