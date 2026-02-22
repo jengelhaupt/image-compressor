@@ -212,8 +212,7 @@ input[type=range] {
     cursor:pointer;
     border-bottom:3px solid transparent;
     text-decoration:none;
-    background: #271d34;
-    color: white;
-    font-size: 10pt;
+    color: inherit;
+
 }
 }
