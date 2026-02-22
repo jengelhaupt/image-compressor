@@ -108,14 +108,6 @@ input[type=range] {
     font-weight:bold;
 }
 
-.language {
-    padding:15px 15px;
-    cursor:pointer;
-    border-bottom:3px solid transparent;
-    text-decoration:none;
-    color:inherit;
-}
-
 .label {
     margin-top:30px;
 }
@@ -212,4 +204,12 @@ input[type=range] {
     #nav {
         display: none;
     }
+    
+.language {
+    padding:15px 15px 15px 50px;
+    cursor:pointer;
+    border-bottom:3px solid transparent;
+    text-decoration:none;
+    color:inherit;
+}
 }
