@@ -110,7 +110,13 @@ async function prepareImages() {
 
     for (const file of files) {
 
-        if (!file.type.match(/jpeg/)) continue;
+            if (!file.type.match(/jpeg/)) {
+            const errorDiv = document.createElement("div");
+            errorDiv.className = "previewItem error";
+            errorDiv.textContent = `Dateiformat "${file.name}" wird nicht unterstützt!`;
+            preview.appendChild(errorDiv);
+            continue;
+        }
 
         const img = new Image();
         img.src = URL.createObjectURL(file);
