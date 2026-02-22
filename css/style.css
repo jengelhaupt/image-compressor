@@ -207,4 +207,10 @@ input[type=range] {
     #nav {
         display: none;
     }
+    .language {
+        padding:15px 15px 15px 50px ;
+    background: #271d34;
+    color: white;
+    font-size: 10pt;
+}
 }
