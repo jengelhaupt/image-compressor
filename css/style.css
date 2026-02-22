@@ -194,9 +194,10 @@ input[type=range] {
     #menu-toggle:checked + .burger + .tabs {
         transform:translateX(0);
     }
-    .language {
+.language {
         padding:30px 0 0 0 ;
 }
+    }
 
 @media (min-width:431px){
     .banner {
