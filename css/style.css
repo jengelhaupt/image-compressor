@@ -61,7 +61,7 @@ p, li {
 .dz-error {
     position: absolute;
     top: 10px;
-    width: 100%;
+    width: 90%;
     text-align: center;
     background: #d93025;
     color: white;
