@@ -61,7 +61,7 @@ p, li {
 .dz-error {
     position: absolute;
     top: 8px;
-    left: 75%;
+    left: 50%;
     transform: translateX(-50%);
     
     background: #d93025;
