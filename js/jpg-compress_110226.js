@@ -12,6 +12,26 @@ const qualityLabel = document.getElementById("jpgVal");
 const qualityWrapper = document.getElementById("jpg");
 
 /* =====================================================
+   DROPZONE ERROR MESSAGE
+===================================================== */
+
+function showDropzoneError(message) {
+
+    const oldError = dropzone.querySelector(".dz-error");
+    if (oldError) oldError.remove();
+
+    const error = document.createElement("div");
+    error.className = "dz-error";
+    error.textContent = message;
+
+    dropzone.appendChild(error);
+
+    setTimeout(() => {
+        error.remove();
+    }, 3000);
+}
+
+/* =====================================================
    STATE
 ===================================================== */
 
@@ -110,13 +130,10 @@ async function prepareImages() {
 
     for (const file of files) {
 
-            if (!file.type.match(/jpeg/)) {
-            const errorDiv = document.createElement("div");
-            errorDiv.className = "previewItem error";
-            errorDiv.textContent = `Dateiformat "${file.name}" wird nicht unterstützt!`;
-            preview.appendChild(errorDiv);
-            continue;
-        }
+         if (!file.type.match(/jpeg/)) {
+          showDropzoneError(`Dateiformat "${file.name}" wird nicht unterstützt. Nur JPG erlaubt.`);
+          continue;
+         }
 
         const img = new Image();
         img.src = URL.createObjectURL(file);
