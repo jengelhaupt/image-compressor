@@ -212,6 +212,8 @@ input[type=range] {
     cursor:pointer;
     border-bottom:3px solid transparent;
     text-decoration:none;
-    color:inherit;
+    background: #271d34;
+    color: white;
+    font-size: 10pt;
 }
 }
