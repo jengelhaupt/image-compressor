@@ -60,8 +60,10 @@ p, li {
 
 .dz-error {
     position: absolute;
-    top: 8px;
-    width: 75%;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    width: 100%;
     text-align: center;
     background: #d93025;
     color: white;
