@@ -113,14 +113,15 @@ async function prepareImages() {
         const infoDiv = document.createElement("div");
         infoDiv.className = "info";
 
-        const download = document.createElement("a");
-        download.className = "download";
-        download.textContent = t("download");
+         const download = document.createElement("a");
+         download.className = "download";
+         download.textContent = t("download");
 
-        container.append(origImg, compressedImg, infoDiv, downloadLink);
-        preview.appendChild(container);
+         container.append(origImg, compressedImg, infoDiv, download);
+         preview.appendChild(container);
 
-        previewItems.push({ compressedImg, infoDiv, downloadLink });
+         previewItems.push({ compressedImg, infoDiv, downloadLink: download });
+
     });
 }
 
