@@ -108,17 +108,6 @@ function t(key) {
     return translations[currentLang][key] || key;
 }
 
-function setLanguage(lang) {
-    currentLang = lang;
-    updateDownloadButtons();
-}
-
-function updateDownloadButtons() {
-    document.querySelectorAll(".download").forEach(btn => {
-        btn.textContent = t("download");
-    });
-}
-
 /* =====================================================
    PREPARE IMAGES
 ===================================================== */
@@ -170,8 +159,6 @@ async function prepareImages() {
 function clamp(v) {
     return v < 0 ? 0 : v > 255 ? 255 : v;
 }
-
-/* ---------- RGB <-> YCbCr ---------- */
 
 function rgbToYCbCr(r, g, b) {
     return {
@@ -257,7 +244,7 @@ function smoothChromaYCbCr(ctx, w, h, strength) {
 }
 
 /* =====================================================
-   DITHER GEGEN BANDING
+   DITHER
 ===================================================== */
 
 function addDither(ctx, w, h, amount = 0.8) {
@@ -291,7 +278,7 @@ async function render() {
 
     const quality = Math.min(
         0.99,
-        Math.pow(qPercent / 100, 1.3) // sanftere Kurve
+        Math.pow(qPercent / 100, 1.3)
     );
 
     for (let i = 0; i < images.length; i++) {
@@ -299,10 +286,10 @@ async function render() {
         const { file, img } = images[i];
         const p = previewItems[i];
 
-        if (qPercent > 85) {
+        if (qPercent > 99) {
             zipFiles.push({ name: file.name, blob: file });
             p.compressedImg.src = img.src;
-            p.info.textContent = "Original übernommen (bereits gut optimiert)";
+            p.info.textContent = "Original übernommen";
             p.download.href = img.src;
             p.download.download = file.name;
             continue;
@@ -345,6 +332,15 @@ async function render() {
         p.download.href = URL.createObjectURL(blob);
         p.download.download = file.name;
     }
+
+    /* =====================================================
+       AUTO SCROLL ZUR PREVIEW
+    ===================================================== */
+
+    preview.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
 }
 
 /* =====================================================
