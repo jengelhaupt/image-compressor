@@ -314,10 +314,10 @@ async function render() {
         const { file, img } = images[i];
         const p = previewItems[i];
 
-        if (qPercent > 85) {
+        if (qPercent > 99) {
             zipFiles.push({ name: file.name, blob: file });
             p.compressedImg.src = img.src;
-            p.info.textContent = "Original übernommen (bereits gut optimiert)";
+            p.info.textContent = "Original übernommen";
             p.download.href = img.src;
             p.download.download = file.name;
             continue;
