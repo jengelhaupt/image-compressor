@@ -1,60 +1,26 @@
 /* =====================================================
-   MOZJPEG (Squoosh WASM)
+   GLOBAL DRAG BLOCK (verhindert Browser-Öffnen)
 ===================================================== */
 
-import squoosh from "https://cdn.jsdelivr.net/npm/@squoosh/lib@0.4.0/build/index.js";
-
-const imagePool = new squoosh.ImagePool(navigator.hardwareConcurrency || 4);
-
-/* 🔥 Preload MozJPEG (verhindert ersten Lag) */
-async function preloadMozJPEG() {
-    const canvas = document.createElement("canvas");
-    canvas.width = 1;
-    canvas.height = 1;
-    const ctx = canvas.getContext("2d");
-    const imageData = ctx.createImageData(1, 1);
-    const image = imagePool.ingestImage(imageData);
-    await image.encode({ mozjpeg: { quality: 75 } });
-    console.log("MozJPEG vorgeladen ✅");
-}
-
-preloadMozJPEG();
-
-/* MozJPEG Encode */
-async function encodeMozJPEG(canvas, qualityPercent) {
-
-    const ctx = canvas.getContext("2d");
-    const { width, height } = canvas;
-
-    const imageData = ctx.getImageData(0, 0, width, height);
-    const image = imagePool.ingestImage(imageData);
-
-    await image.encode({
-        mozjpeg: {
-            quality: qualityPercent,
-            progressive: true,
-            trellis: true,
-            trellisDC: true,
-            optimizeCoding: true,
-            quantTable: 3,
-            chromaSubsampling: "4:4:4"
+["dragover", "drop"].forEach(eventName => {
+    document.addEventListener(eventName, (e) => {
+        if (!e.target.closest("#dropzone")) {
+            e.preventDefault();
         }
     });
-
-    const { binary } = await image.encodedWith.mozjpeg;
-
-    return new Blob([binary], { type: "image/jpeg" });
-}
+});
 
 /* =====================================================
-   GLOBAL DRAG BLOCK (WICHTIG!)
+   MOZJPEG WASM INIT
 ===================================================== */
 
-["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
-    document.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-    });
+let mozjpeg = null;
+let mozjpegReady = false;
+
+MozJPEG().then((module) => {
+    mozjpeg = module;
+    mozjpegReady = true;
+    console.log("MozJPEG geladen ✅");
 });
 
 /* =====================================================
@@ -98,7 +64,8 @@ qualityInput.addEventListener("change", () => {
 
 dropzone.addEventListener("click", () => fileInput.click());
 
-dropzone.addEventListener("dragover", () => {
+dropzone.addEventListener("dragover", (e) => {
+    e.preventDefault();
     dropzone.classList.add("dragover");
 });
 
@@ -107,7 +74,9 @@ dropzone.addEventListener("dragleave", () => {
 });
 
 dropzone.addEventListener("drop", async (e) => {
+    e.preventDefault();
     dropzone.classList.remove("dragover");
+
     files = [...e.dataTransfer.files];
     await prepareImages();
     await render();
@@ -162,34 +131,45 @@ async function prepareImages() {
 }
 
 /* =====================================================
-   OPTIONAL DITHER (gegen Banding)
+   MOZJPEG ENCODE
 ===================================================== */
 
-function clamp(v) {
-    return v < 0 ? 0 : v > 255 ? 255 : v;
-}
+async function encodeMozJPEG(canvas, quality) {
 
-function addDither(ctx, w, h, amount = 0.6) {
-    const img = ctx.getImageData(0, 0, w, h);
-    const d = img.data;
-
-    for (let i = 0; i < d.length; i += 4) {
-        const noise = (Math.random() - 0.5) * amount;
-        d[i]     = clamp(d[i] + noise);
-        d[i + 1] = clamp(d[i + 1] + noise);
-        d[i + 2] = clamp(d[i + 2] + noise);
+    if (!mozjpegReady) {
+        throw new Error("MozJPEG noch nicht geladen");
     }
 
-    ctx.putImageData(img, 0, 0);
+    const ctx = canvas.getContext("2d");
+    const { width, height } = canvas;
+    const imageData = ctx.getImageData(0, 0, width, height);
+
+    const result = mozjpeg.encode(
+        imageData.data,
+        width,
+        height,
+        {
+            quality: quality,
+            progressive: true,
+            optimize_coding: true
+        }
+    );
+
+    return new Blob([result], { type: "image/jpeg" });
 }
 
 /* =====================================================
-   RENDER (MOZJPEG)
+   RENDER
 ===================================================== */
 
 async function render() {
 
     if (!images.length) return;
+
+    if (!mozjpegReady) {
+        alert("MozJPEG lädt noch… bitte kurz warten.");
+        return;
+    }
 
     zipFiles = [];
 
@@ -206,10 +186,6 @@ async function render() {
 
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
-
-        if (qPercent < 75) {
-            addDither(ctx, canvas.width, canvas.height, 0.6);
-        }
 
         const blob = await encodeMozJPEG(canvas, qPercent);
 
