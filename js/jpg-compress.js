@@ -2,9 +2,9 @@
    MOZJPEG (Squoosh WASM)
 ===================================================== */
 
-import { ImagePool } from "https://unpkg.com/@squoosh/lib@0.4.0/build/index.js";
+import squoosh from "https://cdn.jsdelivr.net/npm/@squoosh/lib@0.4.0/build/index.js";
 
-const imagePool = new ImagePool(navigator.hardwareConcurrency || 4);
+const imagePool = new squoosh.ImagePool(navigator.hardwareConcurrency || 4);
 
 /* 🔥 Preload MozJPEG (verhindert ersten Lag) */
 async function preloadMozJPEG() {
