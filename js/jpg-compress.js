@@ -1,13 +1,18 @@
 /* =====================================================
    ELEMENTS
-   ===================================================== */
+===================================================== */
 
 const dropzone = document.getElementById("dropzone");
 const fileInput = document.getElementById("fileInput");
 const preview = document.getElementById("preview");
 const zipBtn = document.getElementById("zipBtn");
+
 const qualityInput = document.getElementById("jpgQ");
 const qualityLabel = document.getElementById("jpgVal");
+
+/* =====================================================
+   STATE
+===================================================== */
 
 let files = [];
 let images = [];
@@ -15,26 +20,8 @@ let previewItems = [];
 let zipFiles = [];
 
 /* =====================================================
-   WORKER POOL (AUTO SCALE)
-   ===================================================== */
-
-const WORKER_COUNT = Math.max(2, navigator.hardwareConcurrency || 4);
-const workers = [];
-let workerIndex = 0;
-
-for (let i = 0; i < WORKER_COUNT; i++) {
-  workers.push(new Worker("jpg-worker.js"));
-}
-
-function getWorker() {
-  const w = workers[workerIndex];
-  workerIndex = (workerIndex + 1) % WORKER_COUNT;
-  return w;
-}
-
-/* =====================================================
    QUALITY CONTROL
-   ===================================================== */
+===================================================== */
 
 qualityLabel.textContent = qualityInput.value;
 
@@ -45,21 +32,32 @@ qualityInput.oninput = () => {
 qualityInput.onchange = () => render();
 
 /* =====================================================
-   DROP & INPUT
-   ===================================================== */
+   DROPZONE
+===================================================== */
 
 dropzone.onclick = () => fileInput.click();
 
 dropzone.ondragover = (e) => {
   e.preventDefault();
+  dropzone.classList.add("dragover");
+};
+
+dropzone.ondragleave = () => {
+  dropzone.classList.remove("dragover");
 };
 
 dropzone.ondrop = async (e) => {
   e.preventDefault();
+  dropzone.classList.remove("dragover");
+
   files = [...e.dataTransfer.files];
   await prepareImages();
   await render();
 };
+
+/* =====================================================
+   FILE INPUT
+===================================================== */
 
 fileInput.onchange = async (e) => {
   files = [...e.target.files];
@@ -69,14 +67,16 @@ fileInput.onchange = async (e) => {
 
 /* =====================================================
    PREPARE IMAGES
-   ===================================================== */
+===================================================== */
 
 async function prepareImages() {
+
   images = [];
   previewItems = [];
   preview.innerHTML = "";
 
   for (const file of files) {
+
     if (!file.type.match(/jpeg/)) continue;
 
     const img = new Image();
@@ -94,7 +94,11 @@ async function prepareImages() {
     const compressedImg = document.createElement("img");
 
     const info = document.createElement("div");
+    info.className = "info";
+
     const download = document.createElement("a");
+    download.className = "download";
+    download.textContent = "Download";
 
     container.append(originalImg, compressedImg, info, download);
     preview.appendChild(container);
@@ -104,10 +108,11 @@ async function prepareImages() {
 }
 
 /* =====================================================
-   RENDER (PARALLEL + WORKER)
-   ===================================================== */
+   RENDER
+===================================================== */
 
 async function render() {
+
   if (!images.length) return;
 
   zipFiles = [];
@@ -119,9 +124,10 @@ async function render() {
     images.map((imgObj, i) =>
       new Promise((resolve) => {
 
-        const worker = getWorker();
+        const worker = new Worker("jpg-workers.js");
 
         worker.onmessage = (e) => {
+
           const blob = e.data.blob;
           const file = imgObj.file;
           const p = previewItems[i];
@@ -133,12 +139,14 @@ async function render() {
           p.download.download = file.name;
 
           const saved = 100 - (blob.size / file.size) * 100;
+
           p.info.textContent =
             `Original ${(file.size/1024).toFixed(1)} KB → ` +
             `Neu ${(blob.size/1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
 
           zipFiles.push({ name: file.name, blob });
 
+          worker.terminate();
           resolve();
         };
 
@@ -151,13 +159,19 @@ async function render() {
       })
     )
   );
+
+  preview.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
 }
 
 /* =====================================================
    ZIP
-   ===================================================== */
+===================================================== */
 
 zipBtn.onclick = async () => {
+
   if (!zipFiles.length) return;
 
   const zip = new JSZip();
