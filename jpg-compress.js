@@ -181,35 +181,18 @@ async function prepareImages() {
 ===================================================== */
 
 async function render() {
-
     if (!images.length) return;
 
     zipFiles = [];
 
     const qPercent = Number(qualityInput.value);
+    const quality = Math.min(0.99, Math.pow(qPercent / 100, 1.3));
 
-    const quality = Math.min(
-        0.99,
-        Math.pow(qPercent / 100, 1.3)
-    );
-
-    const promises = images.map(async ({ file, img }, i) => {
-        const p = previewItems[i];
-
-        if (qPercent > 99) {
-            zipFiles.push({ name: file.name, blob: file });
-            p.compressedImg.src = img.src;
-            p.info.textContent = "Original übernommen";
-            p.download.href = img.src;
-            p.download.download = file.name;
-            return;
-        }
-
+    const processedImages = await Promise.all(images.map(async ({ file, img }) => {
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;
         const ctx = canvas.getContext("2d");
-
         ctx.drawImage(img, 0, 0);
 
         let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -225,9 +208,14 @@ async function render() {
 
         ctx.putImageData(imageData, 0, 0);
 
-        let blob = await new Promise((resolve) =>
-            canvas.toBlob(resolve, "image/jpeg", quality)
-        );
+        return { canvas, file, img };
+    }));
+
+    for (let i = 0; i < processedImages.length; i++) {
+        const { canvas, file, img } = processedImages[i];
+        const p = previewItems[i];
+
+        let blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", quality));
 
         if (blob.size >= file.size * 0.98) blob = file;
 
@@ -243,9 +231,7 @@ async function render() {
 
         p.download.href = URL.createObjectURL(blob);
         p.download.download = file.name;
-    });
-
-    await Promise.all(promises);
+    }
 
     /* =====================================================
        AUTO SCROLL ZUR PREVIEW
