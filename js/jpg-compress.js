@@ -124,7 +124,7 @@ async function render() {
     images.map((imgObj, i) =>
       new Promise((resolve) => {
 
-        const worker = new Worker("jpg-workers.js");
+        const worker = new Worker("jpg-worker.js");
 
         worker.onmessage = (e) => {
 
