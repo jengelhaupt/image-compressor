@@ -156,17 +156,13 @@ async function prepareImages() {
    RENDER
 ===================================================== */
 
-const worker = new Worker("https://free-img-compressor.de/js/jpg-worker.js");
-
+const worker = new Worker("js/worker.js");
 const workerPromises = new Map();
 
 worker.onmessage = (e) => {
     const { id, blob } = e.data;
     const resolve = workerPromises.get(id);
-    if (resolve) {
-        resolve(blob);
-        workerPromises.delete(id);
-    }
+    if (resolve) { resolve(blob); workerPromises.delete(id); }
 };
 
 async function render() {
@@ -197,7 +193,7 @@ async function render() {
 
         const id = crypto.randomUUID();
         const promise = new Promise(res => workerPromises.set(id, res));
-        worker.postMessage({ id, file, imgData, quality, qPercent });
+        worker.postMessage({ id, imgData, quality, qPercent });
 
         let blob = await promise;
         if (blob.size >= file.size * 0.98) blob = file;
