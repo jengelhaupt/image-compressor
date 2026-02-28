@@ -1,6 +1,6 @@
 /* =====================================================
-   IMAGE WORKER
-   ===================================================== */
+   JPG WORKER
+===================================================== */
 
 function clamp(v) {
   return v < 0 ? 0 : v > 255 ? 255 : v;
@@ -78,9 +78,11 @@ function addDither(d, amount) {
 }
 
 self.onmessage = async (e) => {
+
   const { file, quality, qPercent } = e.data;
 
   const bitmap = await createImageBitmap(file);
+
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
   const ctx = canvas.getContext("2d");
 
