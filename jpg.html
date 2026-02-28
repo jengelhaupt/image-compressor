@@ -4,7 +4,193 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="index,follow">
-<meta http-equiv="refresh" content="0; url=https://free-img-compressor.de/compress/jpg">
+<title>JPG kostenlos online komprimieren | free-img-compressor.de</title>
+        <meta name="description" content="JPG Bilder kostenlos online komprimieren. Dateigröße reduzieren ohne sichtbaren Qualitätsverlust – sicher, ohne Anmeldung & ohne Speicherung.">
+    <link rel="canonical" href="https://free-img-compressor.de/compress/jpg">
+<meta property="og:url" content="https://free-img-compressor.de/compress/jpg">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://free-img-compressor.de/css/style.css">
+        <link  rel="icon" type="image/x-icon" href="https://free-img-compressor.de/media/favicon.svg" />
+<link  rel="shortcut icon" type="image/x-icon" href="https://free-img-compressor.de/media/favicon.svg" />
+
+    <!-- MODE FEST VORGEGEBEN -->
+<script>
+  const MODE = "jpg";
+</script>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
 </head>
-  <body></body>
+
+<body>
+   <div class="container-logo">
+        <div class="row">
+                <div class="col-md-4"></div>
+    <div class="col-12 col-md-4">
+          <a href="https://free-img-compressor.de"><img src="https://free-img-compressor.de/media/image-compressor_pfade.svg" style="width: 75%; display: flex; margin: 0 auto;"alt="Logo"></a>
+
+                <div class="col-md-4"></div>
+        </div></div></div>
+    <div class="banner" style="background:#271d34; padding: 15px;">  
+      <div style="display: flex; justify-content: center;">
+      <a href="https://free-img-compressor.de/compress/jpg" style="text-decoration: none; color: white; padding: 0 10px; font-size: 10pt" title="JPEG Bilder komprimieren">JPG</a>
+      <a href="https://free-img-compressor.de/compress/webp" style="text-decoration: none; color: white; padding: 0 10px; font-size: 10pt" title="WebP Bilder komprimieren">WebP</a>
+      <a href="https://free-img-compressor.de/compress/png" style="text-decoration: none; color: white; padding: 0 10px; font-size: 10pt" title="PNG Bilder komprimieren">PNG</a>
+    </div>    
+    </div>
+<nav>
+
+  <input type="checkbox" id="menu-toggle">
+  <label for="menu-toggle" class="burger">☰</label>
+
+  <div class="tabs">
+      <a class="tab" href="https://free-img-compressor.de/compress"><strong>Bilder komprimieren:</strong></a>
+      <a class="tab" href="https://free-img-compressor.de/compress/jpg" title="JPEG Bilder komprimieren">JPG</a>
+      <a class="tab" href="https://free-img-compressor.de/compress/webp" title="WebP Bilder komprimieren">WebP</a>
+      <a class="tab" href="https://free-img-compressor.de/compress/png" title="PNG Bilder komprimieren">PNG</a>
+      <a class="tab" href="https://free-img-compressor.de/compress/pdf" title="PDF Dateien komprimieren">PDF</a>
+          <a class="tab" href="https://free-img-compressor.de/about-us" id="nav">Über mich</a>
+                          <!-- Sprach-Dropdown -->
+            <div class="language">
+        <select onchange="location = this.value;">
+            <option>Sprache</option>
+         <option value="https://free-img-compressor.de/compress/jpg">Deutsch</option>
+          <option value="https://free-img-compressor.de/tr/compress/jpg">Türkçe</option>
+        </select> </div>
+  </div>
+
+</nav>
+        
+<div class="container col-md-10">
+            <div id="breadcrumbs">
+<a href="https://free-img-compressor.de">Startseite</a> 
+<span style="font-size:9px;"> &gt; </span>
+<a href="https://free-img-compressor.de/compress">Compress</a> 
+<span style="font-size:9px;"> &gt; </span>
+<a href="https://free-img-compressor.de/compress/jpg">JPG komprimieren</a>
+</div>
+          
+<h1>Der einfachste Weg um deine JPG-Dateien zu komprimieren!</h1>
+<p>Du möchtest deine JPG-Dateien schnell und einfach verkleinern, ohne dabei auf gute Bildqualität zu verzichten? Mit unserem Tool kannst du deine Bilddateien hochladen und in wenigen Sekunden optimieren.
+Füge deine JPGs bequem per Drag & Drop oder Klick direkt im Browser hinzu und passe die Komprimierung nach deinen Wünschen an. Anschließend kannst du deine optimierten Bilder gesammelt herunterladen oder einzeln speichern.
+Effizient, unkompliziert und sofort einsatzbereit.</p>
+<div class="dropzone" id="dropzone">
+           <div class="container col-md-4">
+       <img src="https://free-img-compressor.de/media/upload_logo.svg" alt="Upload" width="30%"> </div>
+    <p>JPG-Dateien hier ablegen</p>
+            <h2 style="font-size:18px !important;"><strong>So einfach komprimierst du deine JPG-Bilder.</strong></h2>
+        1. JPG-Dateien hochladen (per Klick oder Drag & Drop).</br>
+        2. Gewünschte JPG-Qualität auswählen.</br>
+        3. Komprimierte Bilder herunterladen.</p>
+    <input type="file" id="fileInput"
+           accept="image/jpeg"
+           multiple hidden>
+</div>
+
+<div class="tabContent active" style="padding-bottom: 30px;" id="jpg">
+    <label class="label">JPG Qualität: <span id="jpgVal">80</span>%</label>
+    <input type="range" id="jpgQ" min="10" max="100" step="1" value="80">
+</div>
+
+<button id="zipBtn">Alle Ergebnisse als ZIP herunterladen</button>
+<div id="preview"></div>
+ 
+
+          <div class="container col-10 col-md-12" style="padding: 30px 10px 30px 10px;">
+    <h3 style="background: #8080801c; padding: 10px; font-weight:bold;">JPG online & kostenlos komprimieren – free-img-compressor.de</h3>
+
+<p>Mit dem Free-IMG-Compressor kannst du JPG-Dateien online und kostenlos komprimieren – schnell, sicher und ohne Installation.
+Reduziere die Dateigröße deiner JPG-Bilder direkt im Browser und verbessere Ladezeiten, Performance und SEO deiner Website. Eine Registrierung ist nicht erforderlich.</p>
+
+<h3 style="background: #8080801c; padding: 10px; font-weight:bold;">JPG-Kompression für bessere Performance und SEO</h3>
+
+<p>Große JPG-Dateien gehören zu den häufigsten Ursachen für langsame Webseiten. Lange Ladezeiten wirken sich negativ auf die Nutzererfahrung und das Google-Ranking aus. 
+Durch eine gezielte JPG-Komprimierung lassen sich Bilder deutlich verkleinern, ohne sichtbaren Qualitätsverlust.</p>
+                  
+<p>Vorteile komprimierter JPG-Bilder:</p>
+                  
+<ul>
+<li>Schnellere Ladezeiten</li>
+
+<li>Bessere Core Web Vitals</li>
+
+<li>Geringerer Bandbreiten- und Speicherverbrauch</li>
+
+<li>Verbesserte SEO-Performance</li>
+
+<li>Höhere Nutzerzufriedenheit</li></ul>
+
+<p>Der Free-IMG-Compressor hilft dir dabei, deine Bilder optimal für Websites, Blogs, Online-Shops und Social-Media-Plattformen vorzubereiten.</p>
+
+<h3 style="background: #8080801c; padding: 10px; font-weight:bold;">So funktioniert der JPG-Compressor</h3>
+<ul>
+<li>JPG-Bilder per Klick oder Drag-and-Drop hochladen</li>
+<li>Komprimierungsstufe auswählen</li>
+<li>Optimierte JPG-Dateien direkt herunterladen</li></ul>
+<p><strong>Mehrere Bilder können gleichzeitig verarbeitet werden. Die Komprimierung erfolgt direkt im Browser, ohne Installation zusätzlicher Software.</strong></p>
+
+
+<h3 style="background: #8080801c; padding: 10px; font-weight:bold;">Vorteile des Free-IMG-Compressors</h3>
+                  
+<ul>
+<li>Kostenlos nutzbar</li>
+
+<li>Keine Registrierung notwendig</li>
+
+<li>Einfache und schnelle Bedienung</li>
+
+<li>Keine Installation erforderlich</li>
+
+<li>Ideal für Web, SEO und Social Media</li>
+
+<li>Deutliche Reduzierung der Dateigröße bei hoher Bildqualität</li></ul>
+
+<h3 style="background: #8080801c; padding: 10px; font-weight:bold;">Für wen eignet sich der JPG-Compressor?</h3>
+
+<p>Dieses Tool eignet sich für:</p>
+                  
+<ul>
+<li>Website-Betreiber</li>
+
+<li>Blogger und Content-Creator</li>
+
+<li>Online-Shop-Betreiber</li>
+
+<li>Fotografen</li>
+
+<li>Agenturen und Webdesigner</li>
+</ul>
+                  
+<p>Wer Bilder online nutzt, profitiert von kleineren JPG-Dateien, schnelleren Seiten und besseren Rankings in Suchmaschinen.</p>
+    </div> </div> 
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+        <script src="https://free-img-compressor.de/jpg-compress.js"></script>
+            <script>
+window.addEventListener("load", function(){
+  window.cookieconsent.initialise({
+    "palette": {
+      "popup": { "background": "#000" },
+      "button": { "background": "#fff" }
+    },
+    "theme": "classic",
+    "content": {
+      "message": "Diese Website verwendet Cookies, um dir das beste Erlebnis zu bieten.",
+      "dismiss": "Verstanden",
+      "link": "Mehr erfahren",
+      "href": "/datenschutz.html"
+    }
+  })
+});
+</script>
+    <br>
+    <footer>
+        <div style="background:#271d34; padding:40px;">
+                <div class="row">
+                                        <div class="col-2"></div>
+                    <div class="col-8 col-md-12">
+                <p style="text-align: center; color: white; font-weight: bold; line-height: 2em;"><a href="https://free-img-compressor.de/about-us.html" style="text-decoration:none; color:white;" title="Über uns">Über uns</a> | <a href="https://free-img-compressor.de/nutzungsbedingungen.html" style="text-decoration:none; color:white;" title="Nutzungsbedingungen">Nutzungsbedingungen</a> | <a href="https://free-img-compressor.de/datenschutz.html" style="text-decoration:none; color:white;" title="Datenschutz">Datenschutzerklärung</a><p>
+                </div>
+                            <div class="col-2"></div>   
+                </div></div>
+                </footer>
+</body>
 </html>
