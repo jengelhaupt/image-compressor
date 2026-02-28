@@ -156,7 +156,7 @@ async function prepareImages() {
    RENDER
 ===================================================== */
 
-const worker = new Worker("js/worker.js");
+const worker = new Worker("js/jpg-worker.js");
 const workerPromises = new Map();
 
 worker.onmessage = (e) => {
