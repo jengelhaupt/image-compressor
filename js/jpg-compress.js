@@ -156,7 +156,7 @@ async function prepareImages() {
    RENDER
 ===================================================== */
 
-const worker = new Worker("js/jpg-worker.js"); // Worker lokal
+const worker = new Worker("https://free-img-compressor.de/js/jpg-worker.js"); // Worker lokal
 const workerPromises = new Map();
 
 worker.onmessage = (e) => {
