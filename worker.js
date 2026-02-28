@@ -110,14 +110,13 @@ function addDither(imageData, amount = 0.8) {
    WORKER MESSAGE HANDLER
 ===================================================== */
 
-self.onmessage = function(e) {
-    const { id, imageData, filter, strength, amount } = e.data;
+self.onmessage = async function (e) {
 
-    if (filter === 'smoothChroma') {
-        smoothChromaYCbCr(imageData, strength);
-    } else if (filter === 'dither') {
-        addDither(imageData, amount);
+    if (!e.data) return;
+
+    const { file, quality } = e.data;
+
+    if (!file) {
+        self.postMessage({ blob: null });
+        return;
     }
-
-    self.postMessage({ id, imageData }, [imageData.data.buffer]);
-};
