@@ -7,7 +7,7 @@ self.onmessage = async (e) => {
         const { id, width, height, data, quality, qPercent } = e.data;
         const imgData = new ImageData(new Uint8ClampedArray(data), width, height);
 
-        const clamp = (v) => (v < 0 ? 0 : v > 255 ? 255 : v);
+        const clamp = v => (v < 0 ? 0 : v > 255 ? 255 : v);
 
         function rgbToYCbCr(r,g,b){return{y:0.299*r+0.587*g+0.114*b,cb:-0.168736*r-0.331264*g+0.5*b+128,cr:0.5*r-0.418688*g-0.081312*b+128};}
         function yCbCrToRgb(y,cb,cr){return{r:clamp(y+1.402*(cr-128)),g:clamp(y-0.344136*(cb-128)-0.714136*(cr-128)),b:clamp(y+1.772*(cb-128))};}
@@ -26,23 +26,24 @@ self.onmessage = async (e) => {
             return d;
         }
 
-        // OffscreenCanvas für Verarbeitung
-        const offscreen = new OffscreenCanvas(imgData.width, imgData.height);
+        // OffscreenCanvas erzeugen
+        const offscreen = new OffscreenCanvas(width, height);
         const ctx = offscreen.getContext("2d");
-        ctx.putImageData(imgData,0,0);
+        ctx.putImageData(imgData, 0, 0);
 
-        if(qPercent<80){
-            const strength=Math.min(0.4,(80-qPercent)/90);
-            const data=ctx.getImageData(0,0,imgData.width,imgData.height);
-            ctx.putImageData(smoothChromaYCbCr(data,imgData.width,imgData.height,strength),0,0);
+        // Pixelbearbeitung
+        if(qPercent < 80){
+            const d = ctx.getImageData(0,0,width,height);
+            ctx.putImageData(smoothChromaYCbCr(d,width,height,Math.min(0.4,(80-qPercent)/90)),0,0);
         }
 
-        if(qPercent<75){
-            const data=ctx.getImageData(0,0,imgData.width,imgData.height);
-            ctx.putImageData(addDither(data),0,0);
+        if(qPercent < 75){
+            const d = ctx.getImageData(0,0,width,height);
+            ctx.putImageData(addDither(d),0,0);
         }
 
-        const blob = await offscreen.convertToBlob({ type:"image/jpeg", quality });
+        // Blob direkt vom Canvas
+        const blob = await offscreen.convertToBlob({ type: "image/jpeg", quality });
 
         self.postMessage({ id, blob });
     } catch(err){
