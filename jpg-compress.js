@@ -2,25 +2,16 @@
    WORKER SETUP
 ===================================================== */
 
-const worker = new Worker('worker.js');
-let workerId = 0;
-const workerPromises = new Map();
+// WICHTIG: worker.js darf NICHT im HTML eingebunden sein
+let worker;
+let isRendering = false;
 
-worker.onmessage = (e) => {
-    const { id, imageData } = e.data;
-    if (workerPromises.has(id)) {
-        workerPromises.get(id)(imageData);
-        workerPromises.delete(id);
-    }
-};
-
-function processImageWithWorker(imgData, filter, options = {}) {
-    return new Promise((resolve) => {
-        const id = workerId++;
-        workerPromises.set(id, resolve);
-        worker.postMessage({ id, imageData: imgData, filter, ...options }, [imgData.data.buffer]);
-    });
+function createWorker() {
+    if (worker) worker.terminate();
+    worker = new Worker("worker.js");
 }
+
+createWorker();
 
 /* =====================================================
    ELEMENTS
@@ -33,10 +24,44 @@ const zipBtn = document.getElementById("zipBtn");
 
 const qualityInput = document.getElementById("jpgQ");
 const qualityLabel = document.getElementById("jpgVal");
-const qualityWrapper = document.getElementById("jpg");
 
 /* =====================================================
-   DROPZONE ERROR MESSAGE
+   LANGUAGE
+===================================================== */
+
+let currentLang = document.documentElement.lang
+    ?.toLowerCase()
+    .startsWith("tr") ? "tr" : "de";
+
+const translations = {
+    de: {
+        download: "Datei herunterladen",
+        original: "Original übernommen",
+        errorType: "Nur JPG Dateien erlaubt.",
+        zipName: "jpg-komprimiert.zip"
+    },
+    tr: {
+        download: "Dosyayı indir",
+        original: "Orijinal kullanıldı",
+        errorType: "Sadece JPG dosyaları desteklenir.",
+        zipName: "jpg-sikistirilmis.zip"
+    }
+};
+
+function t(key) {
+    return translations[currentLang][key] || key;
+}
+
+/* =====================================================
+   STATE
+===================================================== */
+
+let files = [];
+let previewItems = [];
+let zipFiles = [];
+
+/* =====================================================
+   DROPZONE ERROR
 ===================================================== */
 
 function showDropzoneError(message) {
@@ -49,24 +74,9 @@ function showDropzoneError(message) {
     error.textContent = message;
 
     dropzone.appendChild(error);
-   
-    dropzone.classList.remove("flash"); 
-    void dropzone.offsetWidth; 
-    dropzone.classList.add("flash");
 
-    setTimeout(() => {
-        error.remove();
-    }, 5000);
+    setTimeout(() => error.remove(), 5000);
 }
-
-/* =====================================================
-   STATE
-===================================================== */
-
-let files = [];
-let images = [];
-let previewItems = [];
-let zipFiles = [];
 
 /* =====================================================
    QUALITY CONTROL
@@ -78,8 +88,12 @@ qualityInput.oninput = () => {
     qualityLabel.textContent = qualityInput.value;
 };
 
-qualityInput.onchange = () => {
-    render();
+qualityInput.onchange = async () => {
+
+    if (!files.length) return;
+
+    createWorker(); // Worker neu starten
+    await render();
 };
 
 /* =====================================================
@@ -101,7 +115,7 @@ dropzone.ondrop = async (e) => {
     e.preventDefault();
     dropzone.classList.remove("dragover");
     files = [...e.dataTransfer.files];
-    await prepareImages();
+    await preparePreview();
     await render();
 };
 
@@ -111,54 +125,38 @@ dropzone.ondrop = async (e) => {
 
 fileInput.onchange = async (e) => {
     files = [...e.target.files];
-    await prepareImages();
+    await preparePreview();
     await render();
 };
 
 /* =====================================================
-   LANGUAGE
+   PREPARE PREVIEW
 ===================================================== */
 
-let currentLang = document.documentElement.lang
-    .toLowerCase()
-    .startsWith("tr") ? "tr" : "de";
+async function preparePreview() {
 
-const translations = {
-    de: { download: "Datei herunterladen" },
-    tr: { download: "Dosyayı indir" }
-};
+    previewItems.forEach(p => {
+        if (p.compressedImg.src?.startsWith("blob:")) {
+            URL.revokeObjectURL(p.compressedImg.src);
+        }
+    });
 
-function t(key) {
-    return translations[currentLang][key] || key;
-}
-
-/* =====================================================
-   PREPARE IMAGES
-===================================================== */
-
-async function prepareImages() {
-    images = [];
     previewItems = [];
+    zipFiles = [];
     preview.innerHTML = "";
 
     for (const file of files) {
 
         if (!file.type.match(/jpeg/)) {
-            showDropzoneError(`Dateiformat "${file.name}" wird nicht unterstützt. Nur JPG erlaubt.`);
+            showDropzoneError(t("errorType"));
             continue;
         }
-
-        const img = new Image();
-        img.src = URL.createObjectURL(file);
-        await img.decode();
-
-        images.push({ file, img });
 
         const container = document.createElement("div");
         container.className = "previewItem";
 
         const originalImg = document.createElement("img");
-        originalImg.src = img.src;
+        originalImg.src = URL.createObjectURL(file);
 
         const compressedImg = document.createElement("img");
 
@@ -177,58 +175,72 @@ async function prepareImages() {
 }
 
 /* =====================================================
+   WORKER WRAPPER
+===================================================== */
+
+function processWithWorker(file, quality) {
+
+    return new Promise((resolve) => {
+
+        const handleMessage = (e) => {
+            worker.removeEventListener("message", handleMessage);
+            resolve(e.data);
+        };
+
+        worker.addEventListener("message", handleMessage);
+
+        worker.postMessage({
+            file,
+            quality
+        });
+    });
+}
+
+/* =====================================================
    RENDER
 ===================================================== */
 
 async function render() {
-    if (!images.length) return;
+
+    if (!files.length || isRendering) return;
+    isRendering = true;
 
     zipFiles = [];
 
     const qPercent = Number(qualityInput.value);
-    const quality = Math.min(0.99, Math.pow(qPercent / 100, 1.3));
 
-    for (let i = 0; i < images.length; i++) {
-        const { file, img } = images[i];
+    for (let i = 0; i < files.length; i++) {
+
+        const file = files[i];
         const p = previewItems[i];
+        if (!p) continue;
 
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
-
-        let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-        // Worker-Filter seriell
-        if (qPercent < 80) {
-            const strength = Math.min(0.4, (80 - qPercent) / 90);
-            imageData = await processImageWithWorker(imageData, 'smoothChroma', { strength });
+        if (p.compressedImg.src?.startsWith("blob:")) {
+            URL.revokeObjectURL(p.compressedImg.src);
         }
 
-        if (qPercent < 75) {
-            imageData = await processImageWithWorker(imageData, 'dither', { amount: 0.8 });
-        }
+        const result = await processWithWorker(file, qPercent);
+        if (!result) continue;
 
-        ctx.putImageData(imageData, 0, 0);
-
-        // JPEG-Encoding seriell → verhindert EncodingError
-        let blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", quality));
-        if (blob.size >= file.size * 0.98) blob = file;
+        const { blob } = result;
+        if (!blob) continue;
 
         zipFiles.push({ name: file.name, blob });
 
-        p.compressedImg.src = URL.createObjectURL(blob);
+        const blobURL = URL.createObjectURL(blob);
+
+        p.compressedImg.src = blobURL;
+        p.download.href = blobURL;
+        p.download.download = file.name;
 
         const saved = 100 - (blob.size / file.size) * 100;
 
         p.info.textContent =
             `Original ${(file.size / 1024).toFixed(1)} KB → ` +
             `Neu ${(blob.size / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-
-        p.download.href = URL.createObjectURL(blob);
-        p.download.download = file.name;
     }
+
+    isRendering = false;
 
     preview.scrollIntoView({
         behavior: "smooth",
@@ -245,12 +257,12 @@ zipBtn.onclick = async () => {
     if (!zipFiles.length) return;
 
     const zip = new JSZip();
-    zipFiles.forEach((f) => zip.file(f.name, f.blob));
+    zipFiles.forEach(f => zip.file(f.name, f.blob));
 
     const blob = await zip.generateAsync({ type: "blob" });
 
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "jpg-komprimiert.zip";
+    a.download = t("zipName");
     a.click();
 };
