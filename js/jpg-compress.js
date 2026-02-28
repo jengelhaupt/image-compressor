@@ -156,10 +156,15 @@ async function prepareImages() {
    RENDER
 ===================================================== */
 
-const worker = new Worker("js/jpg-worker.js");
+const worker = new Worker("js/jpg-worker.js"); // Worker lokal
 const workerPromises = new Map();
 
 worker.onmessage = (e) => {
+    if (e.data.type === "error") {
+        console.error("Worker-Fehler:", e.data.message, e.data.stack);
+        return;
+    }
+
     const { id, blob } = e.data;
     const resolve = workerPromises.get(id);
     if (resolve) { resolve(blob); workerPromises.delete(id); }
@@ -184,16 +189,27 @@ async function render() {
             return;
         }
 
+        // Canvas erzeugen
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
+
         const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
         const id = crypto.randomUUID();
         const promise = new Promise(res => workerPromises.set(id, res));
-        worker.postMessage({ id, imgData, quality, qPercent });
+
+        // ImageData als ArrayBuffer an Worker schicken
+        worker.postMessage({
+            id,
+            width: imgData.width,
+            height: imgData.height,
+            data: imgData.data.buffer,
+            quality,
+            qPercent
+        }, [imgData.data.buffer]); // Transferable
 
         let blob = await promise;
         if (blob.size >= file.size * 0.98) blob = file;
