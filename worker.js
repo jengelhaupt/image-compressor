@@ -1,7 +1,5 @@
-// worker.js
-
 /* =====================================================
-   UTILS
+   IMAGE PROCESSING HELPERS
 ===================================================== */
 
 function clamp(v) {
@@ -25,20 +23,21 @@ function yCbCrToRgb(y, cb, cr) {
 }
 
 /* =====================================================
-   SMOOTH CHROMA
+   ROT-ADAPTIVES CHROMA SMOOTHING
 ===================================================== */
 
-function smoothChromaYCbCr(imgData, strength) {
-    const d = imgData.data;
-    const w = imgData.width;
-    const h = imgData.height;
+function smoothChromaYCbCr(imageData, strength) {
+
+    const d = imageData.data;
+    const w = imageData.width;
+    const h = imageData.height;
+
     const radius = strength > 0.25 ? 2 : 1;
 
     const yArr = new Float32Array(w * h);
     const cbArr = new Float32Array(w * h);
     const crArr = new Float32Array(w * h);
 
-    // RGB -> YCbCr
     for (let i = 0, p = 0; i < d.length; i += 4, p++) {
         const { y, cb, cr } = rgbToYCbCr(d[i], d[i + 1], d[i + 2]);
         yArr[p] = y;
@@ -71,12 +70,16 @@ function smoothChromaYCbCr(imgData, strength) {
                 ? Math.min(0.6, strength * 1.8)
                 : strength;
 
-            cbArr[i] = cbCopy[i] * (1 - localStrength) + (sumCb / count) * localStrength;
-            crArr[i] = crCopy[i] * (1 - localStrength) + (sumCr / count) * localStrength;
+            cbArr[i] =
+                cbCopy[i] * (1 - localStrength) +
+                (sumCb / count) * localStrength;
+
+            crArr[i] =
+                crCopy[i] * (1 - localStrength) +
+                (sumCr / count) * localStrength;
         }
     }
 
-    // YCbCr -> RGB
     for (let i = 0, p = 0; i < d.length; i += 4, p++) {
         const { r, g, b } = yCbCrToRgb(yArr[p], cbArr[p], crArr[p]);
         d[i]     = r;
@@ -89,13 +92,17 @@ function smoothChromaYCbCr(imgData, strength) {
    DITHER
 ===================================================== */
 
-function addDither(imgData, amount = 0.8) {
-    const d = imgData.data;
+function addDither(imageData, amount = 0.8) {
+
+    const d = imageData.data;
+
     for (let i = 0; i < d.length; i += 4) {
+
         const noise = (Math.random() - 0.5) * amount;
+
         d[i]     = clamp(d[i] + noise);
-        d[i+1]   = clamp(d[i+1] + noise);
-        d[i+2]   = clamp(d[i+2] + noise);
+        d[i + 1] = clamp(d[i + 1] + noise);
+        d[i + 2] = clamp(d[i + 2] + noise);
     }
 }
 
@@ -104,7 +111,7 @@ function addDither(imgData, amount = 0.8) {
 ===================================================== */
 
 self.onmessage = function(e) {
-    const { imageData, filter, strength = 0.5, amount = 0.8 } = e.data;
+    const { id, imageData, filter, strength, amount } = e.data;
 
     if (filter === 'smoothChroma') {
         smoothChromaYCbCr(imageData, strength);
@@ -112,6 +119,5 @@ self.onmessage = function(e) {
         addDither(imageData, amount);
     }
 
-    // Transfer back the buffer, kein Copy
-    self.postMessage(imageData, [imageData.data.buffer]);
-}
+    self.postMessage({ id, imageData }, [imageData.data.buffer]);
+};
