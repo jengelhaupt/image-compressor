@@ -188,7 +188,10 @@ async function render() {
     const qPercent = Number(qualityInput.value);
     const quality = Math.min(0.99, Math.pow(qPercent / 100, 1.3));
 
-    const processedImages = await Promise.all(images.map(async ({ file, img }) => {
+    for (let i = 0; i < images.length; i++) {
+        const { file, img } = images[i];
+        const p = previewItems[i];
+
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;
@@ -197,6 +200,7 @@ async function render() {
 
         let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
+        // Worker-Filter seriell
         if (qPercent < 80) {
             const strength = Math.min(0.4, (80 - qPercent) / 90);
             imageData = await processImageWithWorker(imageData, 'smoothChroma', { strength });
@@ -208,15 +212,8 @@ async function render() {
 
         ctx.putImageData(imageData, 0, 0);
 
-        return { canvas, file, img };
-    }));
-
-    for (let i = 0; i < processedImages.length; i++) {
-        const { canvas, file, img } = processedImages[i];
-        const p = previewItems[i];
-
+        // JPEG-Encoding seriell → verhindert EncodingError
         let blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", quality));
-
         if (blob.size >= file.size * 0.98) blob = file;
 
         zipFiles.push({ name: file.name, blob });
@@ -232,10 +229,6 @@ async function render() {
         p.download.href = URL.createObjectURL(blob);
         p.download.download = file.name;
     }
-
-    /* =====================================================
-       AUTO SCROLL ZUR PREVIEW
-    ===================================================== */
 
     preview.scrollIntoView({
         behavior: "smooth",
