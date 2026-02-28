@@ -167,7 +167,10 @@ worker.onmessage = (e) => {
 
     const { id, blob } = e.data;
     const resolve = workerPromises.get(id);
-    if (resolve) { resolve(blob); workerPromises.delete(id); }
+    if (resolve) {
+        resolve(blob);
+        workerPromises.delete(id);
+    }
 };
 
 async function render() {
@@ -201,7 +204,7 @@ async function render() {
         const id = crypto.randomUUID();
         const promise = new Promise(res => workerPromises.set(id, res));
 
-        // ImageData als ArrayBuffer an Worker schicken
+        // ImageData als ArrayBuffer an Worker schicken (Transferable)
         worker.postMessage({
             id,
             width: imgData.width,
@@ -209,7 +212,7 @@ async function render() {
             data: imgData.data.buffer,
             quality,
             qPercent
-        }, [imgData.data.buffer]); // Transferable
+        }, [imgData.data.buffer]);
 
         let blob = await promise;
         if (blob.size >= file.size * 0.98) blob = file;
@@ -225,6 +228,7 @@ async function render() {
 
     await Promise.all(tasks);
 
+    // Scroll zur Vorschau
     preview.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
