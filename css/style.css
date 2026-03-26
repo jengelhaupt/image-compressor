@@ -236,25 +236,38 @@ input[type=range] {
 }
     }
 
+/* Dropdown Container */
 .dropdown {
   position: relative;
 }
 
-/* Submenu komplett unabhängig */
+/* Checkbox verstecken */
+.dropdown input {
+  display: none;
+}
+
+/* Submenu komplett losgelöst */
 .dropdown-content {
   display: none;
   position: absolute;
   top: 100%;
   left: 0;
 
-  background: #1a1425; /* eigener Background (anders!) */
+  background: #1a1425; /* eigener Background */
   min-width: 200px;
-  border-radius: 6px;
 
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  z-index: 9999;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+
+  z-index: 9999; /* GANZ wichtig */
 }
 
+/* Wenn aktiv → anzeigen */
+.dropdown input:checked ~ .dropdown-content {
+  display: block;
+}
+
+/* Links im Submenu */
 .dropdown-content a {
   display: block;
   padding: 10px;
@@ -264,13 +277,6 @@ input[type=range] {
 
 .dropdown-content a:hover {
   background: #3a2a50;
-}
-
-/* Desktop Hover */
-@media (min-width: 432px) {
-  .dropdown:hover .dropdown-content {
-    display: block;
-  }
 }
 
 @media (min-width:431px){
@@ -287,6 +293,4 @@ input[type=range] {
     color: white;
     font-size: 10pt;
 }
-      .dropdown-content {
-    position: static;
 }
