@@ -247,7 +247,7 @@ input[type=range] {
 }
 
 /* Desktop */
-@media (min-width: 768px) {
+@media (min-width: 432px) {
   .dropdown-content {
     display: none;
     position: absolute;
@@ -263,22 +263,7 @@ input[type=range] {
   }
 }
 
-/* Mobile */
-@media (max-width: 431px) {
-  .dropdown-content {
-    display: block; 
-    position: static;
-    margin-left: 10px;
-    margin-top: 5px;
-  }
-
-  .dropdown-content a {
-    font-size: 0.9em;
-    opacity: 0.9;
-  }
-}
-
-@media (min-width:432px){
+@media (min-width:431px){
     .banner {
         display: none;
     }
@@ -292,4 +277,15 @@ input[type=range] {
     color: white;
     font-size: 10pt;
 }
+      .dropdown-content {
+    display: block; 
+    position: static;
+    margin-left: 10px;
+    margin-top: 5px;
+  }
+
+  .dropdown-content a {
+    font-size: 0.9em;
+    opacity: 0.9;
+  }
 }
