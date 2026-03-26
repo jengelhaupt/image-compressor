@@ -237,12 +237,13 @@ input[type=range] {
     }
 
 .dropdown {
+padding: 15px 0px;
   position: relative;
 }
 
 /* Submenu Basis */
 .dropdown-content {
-  background: #1a1425;
+  background: white;
   border-radius: 8px;
 }
 
