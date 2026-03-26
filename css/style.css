@@ -236,21 +236,23 @@ input[type=range] {
 }
     }
 
-/* Dropdown */
 .dropdown {
   position: relative;
 }
 
-/* Submenu */
+/* Submenu komplett unabhängig */
 .dropdown-content {
   display: none;
   position: absolute;
   top: 100%;
   left: 0;
-  background: #271d34;
+
+  background: #1a1425; /* eigener Background (anders!) */
   min-width: 200px;
   border-radius: 6px;
-  z-index: 999;
+
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  z-index: 9999;
 }
 
 .dropdown-content a {
