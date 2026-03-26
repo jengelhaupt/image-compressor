@@ -236,50 +236,49 @@ input[type=range] {
 }
     }
 
-/* Dropdown Container */
 .dropdown {
   position: relative;
 }
 
-/* Checkbox verstecken */
-.dropdown input {
-  display: none;
-}
-
-/* Submenu komplett losgelöst */
+/* Submenu Basis */
 .dropdown-content {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-
-  background: #1a1425; /* eigener Background */
-  min-width: 200px;
-
+  background: #1a1425;
   border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-
-  z-index: 9999; /* GANZ wichtig */
 }
 
-/* Wenn aktiv → anzeigen */
-.dropdown input:checked ~ .dropdown-content {
-  display: block;
+/* Desktop */
+@media (min-width: 768px) {
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    z-index: 9999;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  }
+
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
 }
 
-/* Links im Submenu */
-.dropdown-content a {
-  display: block;
-  padding: 10px;
-  color: white;
-  text-decoration: none;
+/* Mobile */
+@media (max-width: 431px) {
+  .dropdown-content {
+    display: block; 
+    position: static;
+    margin-left: 10px;
+    margin-top: 5px;
+  }
+
+  .dropdown-content a {
+    font-size: 0.9em;
+    opacity: 0.9;
+  }
 }
 
-.dropdown-content a:hover {
-  background: #3a2a50;
-}
-
-@media (min-width:431px){
+@media (min-width:432px){
     .banner {
         display: none;
     }
