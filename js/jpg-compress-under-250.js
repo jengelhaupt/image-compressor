@@ -80,12 +80,18 @@ async function prepareImages() {
         images.push({ file, img });
 
         const container = document.createElement("div");
-        const originalImg = document.createElement("img");
-        const compressedImg = document.createElement("img");
-        const info = document.createElement("div");
-        const download = document.createElement("a");
+        container.className = "previewItem";
 
+        const originalImg = document.createElement("img");
         originalImg.src = img.src;
+
+        const compressedImg = document.createElement("img");
+
+        const info = document.createElement("div");
+        info.className = "info";
+
+        const download = document.createElement("a");
+        download.className = "download";
         download.textContent = "Download";
 
         container.append(originalImg, compressedImg, info, download);
