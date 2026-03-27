@@ -275,6 +275,8 @@ padding: 15px 0px;
     font-size: 10pt;
 }
   .dropdown-content {
+    font-size: 12pt;
+    line-height: 1.8em;
     display: none;
     position: absolute;
     top: 100%;
