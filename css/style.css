@@ -181,6 +181,7 @@ input[type=range] {
 }
 
 .subnav-link {
+    font-size: 10pt;
     display: inline-block;
     padding: 0.6rem 1.2rem;
     margin: 2px;
@@ -190,7 +191,6 @@ input[type=range] {
     text-decoration: none;
     white-space: nowrap;
     border: 2px solid transparent;
-    transition: all 0.2s ease;
 }
 
 .subnav-grid-wrapper {
@@ -198,7 +198,6 @@ input[type=range] {
         flex-wrap: wrap;
         gap: 0.6rem;
         margin: 1rem 0 2rem;
-        padding-left: 1rem;
         justify-content: center;
     }
 
