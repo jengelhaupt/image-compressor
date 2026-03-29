@@ -53,11 +53,6 @@ function t(key) {
     return translations[currentLang][key] || key;
 }
 
-function setLanguage(lang) {
-    currentLang = lang;
-    updateDownloadButtons();
-}
-
 function updateDownloadButtons() {
     document.querySelectorAll(".download").forEach(btn => {
         btn.textContent = t("download");
@@ -65,7 +60,7 @@ function updateDownloadButtons() {
 }
 
 /* =========================
-   PREPARE IMAGES
+   PREPARE IMAGES + PROGRESS UI
 ========================= */
 async function prepareImages() {
     originalImages = await Promise.all(
@@ -91,20 +86,34 @@ async function prepareImages() {
 
         const infoDiv = document.createElement("div");
         infoDiv.className = "info";
+        infoDiv.textContent = "Optimiere…";
 
         const download = document.createElement("a");
         download.className = "download";
         download.textContent = t("download");
 
-        container.append(origImg, compressedImg, infoDiv, download);
+        // 🔥 Progressbar
+        const progressDiv = document.createElement("div");
+        progressDiv.style.width = "100%";
+        progressDiv.style.marginTop = "6px";
+
+        const progressBar = document.createElement("div");
+        progressBar.style.height = "6px";
+        progressBar.style.width = "0%";
+        progressBar.style.background = "#4caf50";
+        progressBar.style.borderRadius = "4px";
+
+        progressDiv.appendChild(progressBar);
+
+        container.append(origImg, compressedImg, infoDiv, progressDiv, download);
         preview.appendChild(container);
 
-        previewItems.push({ compressedImg, infoDiv, downloadLink: download });
+        previewItems.push({ compressedImg, infoDiv, downloadLink: download, progressBar });
     });
 }
 
 /* =========================
-   RENDER MIT UPNG - AUTOMATISCH
+   RENDER MIT PROGRESS
 ========================= */
 async function render() {
     if (!originalImages.length) return;
@@ -126,13 +135,19 @@ async function render() {
         let bestBlob = file;
         let bestSize = file.size;
 
-        // Automatische, visuell verlustfreie Optimierung
         const testColors = [256, 192, 128, 96, 64, 48, 32];
+        const totalSteps = testColors.length;
 
-        for (let colors of testColors) {
+        for (let step = 0; step < totalSteps; step++) {
+            const colors = testColors[step];
+
             const qres = UPNG.quantize(originalRGBA, colors);
             const pngData = UPNG.encode([qres.abuf], canvas.width, canvas.height, 0, qres.plte.length);
             const blob = new Blob([pngData], { type: "image/png" });
+
+            // Fortschritt updaten
+            const percent = Math.round(((step + 1) / totalSteps) * 100);
+            p.progressBar.style.width = percent + "%";
 
             if (blob.size < bestSize) {
                 bestBlob = blob;
@@ -147,17 +162,24 @@ async function render() {
         p.infoDiv.textContent =
             `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(bestSize / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
 
+        p.progressBar.style.width = "100%";
+
+        setTimeout(() => {
+            p.progressBar.style.display = "none";
+        }, 500);
+
         zipFiles.push({ name: file.name, blob: bestBlob });
 
         p.compressedImg.src = URL.createObjectURL(bestBlob);
         p.downloadLink.href = URL.createObjectURL(bestBlob);
         p.downloadLink.download = file.name;
     }
-       const previewTop = preview.getBoundingClientRect().top + window.scrollY;
-    const offset = 16;
+
+    // Scroll zur Preview
+    const previewTop = preview.getBoundingClientRect().top + window.scrollY;
 
     window.scrollTo({
-        top: previewTop - offset,
+        top: previewTop - 16,
         behavior: "smooth"
     });
 }
