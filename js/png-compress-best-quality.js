@@ -9,6 +9,13 @@ let originalImages = [];
 let previewItems = [];
 
 /* =========================
+   HELPER: UI UPDATE ERLAUBEN
+========================= */
+function nextFrame() {
+    return new Promise(requestAnimationFrame);
+}
+
+/* =========================
    DRAG & DROP
 ========================= */
 dropzone.onclick = () => fileInput.click();
@@ -86,13 +93,13 @@ async function prepareImages() {
 
         const infoDiv = document.createElement("div");
         infoDiv.className = "info";
-        infoDiv.textContent = "Optimiere…";
+        infoDiv.textContent = "Bereit…";
 
         const download = document.createElement("a");
         download.className = "download";
         download.textContent = t("download");
 
-        // 🔥 Progressbar
+        // Progressbar
         const progressDiv = document.createElement("div");
         progressDiv.style.width = "100%";
         progressDiv.style.marginTop = "6px";
@@ -102,6 +109,7 @@ async function prepareImages() {
         progressBar.style.width = "0%";
         progressBar.style.background = "#4caf50";
         progressBar.style.borderRadius = "4px";
+        progressBar.style.display = "none";
 
         progressDiv.appendChild(progressBar);
 
@@ -113,7 +121,7 @@ async function prepareImages() {
 }
 
 /* =========================
-   RENDER MIT PROGRESS
+   RENDER MIT ECHTEM PROGRESS
 ========================= */
 async function render() {
     if (!originalImages.length) return;
@@ -122,6 +130,13 @@ async function render() {
     for (let i = 0; i < originalImages.length; i++) {
         const { file, img } = originalImages[i];
         const p = previewItems[i];
+
+        p.infoDiv.textContent = "Optimiere…";
+        p.progressBar.style.display = "block";
+        p.progressBar.style.width = "0%";
+
+        // 👉 UI sichtbar machen bevor Berechnung startet
+        await nextFrame();
 
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
@@ -145,9 +160,12 @@ async function render() {
             const pngData = UPNG.encode([qres.abuf], canvas.width, canvas.height, 0, qres.plte.length);
             const blob = new Blob([pngData], { type: "image/png" });
 
-            // Fortschritt updaten
+            // Fortschritt
             const percent = Math.round(((step + 1) / totalSteps) * 100);
             p.progressBar.style.width = percent + "%";
+
+            // 👉 UI Update während Verarbeitung
+            await nextFrame();
 
             if (blob.size < bestSize) {
                 bestBlob = blob;
