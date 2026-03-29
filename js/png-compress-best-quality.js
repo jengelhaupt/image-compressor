@@ -9,21 +9,6 @@ let originalImages = [];
 let previewItems = [];
 
 /* =========================
-   CONTROL (QUALITY 1–100)
-========================= */
-const qualityWrapper = document.getElementById("png");
-const controlInput = document.getElementById("pngC");
-const controlLabel = document.getElementById("pngVal");
-
-controlLabel.textContent = controlInput.value + "%";
-controlInput.oninput = () => {
-    controlLabel.textContent = controlInput.value + "%";
-};
-
-// Render erst beim Loslassen
-controlInput.onchange = () => render();
-
-/* =========================
    DRAG & DROP
 ========================= */
 dropzone.onclick = () => fileInput.click();
@@ -33,8 +18,7 @@ dropzone.ondragover = e => {
     dropzone.classList.add("dragover");
 };
 
-dropzone.ondragleave = () =>
-    dropzone.classList.remove("dragover");
+dropzone.ondragleave = () => dropzone.classList.remove("dragover");
 
 dropzone.ondrop = async e => {
     e.preventDefault();
@@ -56,18 +40,13 @@ fileInput.onchange = async e => {
 /* =========================
    LANGUAGE
 ========================= */
-
 let currentLang = document.documentElement.lang
     .toLowerCase()
     .startsWith("tr") ? "tr" : "de";
 
 const translations = {
-    de: {
-        download: "Datei herunterladen"
-    },
-    tr: {
-        download: "Dosyayı indir"
-    }
+    de: { download: "Datei herunterladen" },
+    tr: { download: "Dosyayı indir" }
 };
 
 function t(key) {
@@ -113,20 +92,19 @@ async function prepareImages() {
         const infoDiv = document.createElement("div");
         infoDiv.className = "info";
 
-         const download = document.createElement("a");
-         download.className = "download";
-         download.textContent = t("download");
+        const download = document.createElement("a");
+        download.className = "download";
+        download.textContent = t("download");
 
-         container.append(origImg, compressedImg, infoDiv, download);
-         preview.appendChild(container);
+        container.append(origImg, compressedImg, infoDiv, download);
+        preview.appendChild(container);
 
-         previewItems.push({ compressedImg, infoDiv, downloadLink: download });
-
+        previewItems.push({ compressedImg, infoDiv, downloadLink: download });
     });
 }
 
 /* =========================
-   RENDER MIT UPNG + QUANTIZE
+   RENDER MIT UPNG - AUTOMATISCH
 ========================= */
 async function render() {
     if (!originalImages.length) return;
@@ -148,27 +126,18 @@ async function render() {
         let bestBlob = file;
         let bestSize = file.size;
 
-        // 🔥 automatische, visuell verlustfreie Optimierung
+        // Automatische, visuell verlustfreie Optimierung
         const testColors = [256, 192, 128, 96, 64, 48, 32];
 
         for (let colors of testColors) {
             const qres = UPNG.quantize(originalRGBA, colors);
-            const pngData = UPNG.encode(
-                [qres.abuf],
-                canvas.width,
-                canvas.height,
-                0,
-                qres.plte.length
-            );
-
+            const pngData = UPNG.encode([qres.abuf], canvas.width, canvas.height, 0, qres.plte.length);
             const blob = new Blob([pngData], { type: "image/png" });
 
-            // 👉 Nur übernehmen, wenn wirklich kleiner
             if (blob.size < bestSize) {
                 bestBlob = blob;
                 bestSize = blob.size;
             } else {
-                // stoppe sobald es wieder schlechter wird
                 break;
             }
         }
@@ -183,18 +152,6 @@ async function render() {
         p.compressedImg.src = URL.createObjectURL(bestBlob);
         p.downloadLink.href = URL.createObjectURL(bestBlob);
         p.downloadLink.download = file.name;
-    }
-
-    // Scroll-Verhalten unverändert
-    const sliderBottom = qualityWrapper.getBoundingClientRect().bottom + window.scrollY;
-    const previewTop = preview.getBoundingClientRect().top + window.scrollY;
-    const offset = 16;
-
-    if (previewTop > sliderBottom) {
-        window.scrollTo({
-            top: previewTop - qualityWrapper.offsetHeight - offset,
-            behavior: "smooth"
-        });
     }
 }
 
