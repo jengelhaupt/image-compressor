@@ -153,6 +153,13 @@ async function render() {
         p.downloadLink.href = URL.createObjectURL(bestBlob);
         p.downloadLink.download = file.name;
     }
+       const previewTop = preview.getBoundingClientRect().top + window.scrollY;
+    const offset = 16;
+
+    window.scrollTo({
+        top: previewTop - offset,
+        behavior: "smooth"
+    });
 }
 
 /* =========================
