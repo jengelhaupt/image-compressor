@@ -9,10 +9,36 @@ let originalImages = [];
 let previewItems = [];
 
 /* =========================
-   HELPER: UI UPDATE ERLAUBEN
+   HELPER
 ========================= */
 function nextFrame() {
     return new Promise(requestAnimationFrame);
+}
+
+/* Analyse: Verlauf vs. Grafik */
+function analyzeImage(rgba) {
+    let uniqueColors = new Set();
+    let gradientScore = 0;
+
+    for (let i = 4; i < rgba.length; i += 40) {
+        const r = rgba[i];
+        const g = rgba[i + 1];
+        const b = rgba[i + 2];
+
+        uniqueColors.add((r << 16) | (g << 8) | b);
+
+        const diff =
+            Math.abs(r - rgba[i - 4]) +
+            Math.abs(g - rgba[i - 3]) +
+            Math.abs(b - rgba[i - 2]);
+
+        if (diff > 20) gradientScore++;
+    }
+
+    return {
+        colorCount: uniqueColors.size,
+        hasGradients: gradientScore > 50
+    };
 }
 
 /* =========================
@@ -35,9 +61,6 @@ dropzone.ondrop = async e => {
     await render();
 };
 
-/* =========================
-   FILE INPUT
-========================= */
 fileInput.onchange = async e => {
     files = [...e.target.files].filter(f => f.type === "image/png");
     await prepareImages();
@@ -60,14 +83,8 @@ function t(key) {
     return translations[currentLang][key] || key;
 }
 
-function updateDownloadButtons() {
-    document.querySelectorAll(".download").forEach(btn => {
-        btn.textContent = t("download");
-    });
-}
-
 /* =========================
-   PREPARE IMAGES + PROGRESS UI
+   PREPARE IMAGES + UI
 ========================= */
 async function prepareImages() {
     originalImages = await Promise.all(
@@ -99,7 +116,6 @@ async function prepareImages() {
         download.className = "download";
         download.textContent = t("download");
 
-        // 🔵 Progressbar (blau, ohne Text)
         const progressDiv = document.createElement("div");
         progressDiv.style.width = "100%";
         progressDiv.style.marginTop = "6px";
@@ -121,7 +137,7 @@ async function prepareImages() {
 }
 
 /* =========================
-   RENDER MIT ECHTEM PROGRESS
+   RENDER + SMART COMPRESSION
 ========================= */
 async function render() {
     if (!originalImages.length) return;
@@ -146,13 +162,22 @@ async function render() {
         const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const originalRGBA = new Uint8Array(imgData.data);
 
+        const analysis = analyzeImage(originalRGBA);
+
+        let testColors;
+
+        if (analysis.hasGradients) {
+            testColors = [256, 224, 192, 160, 128];
+        } else if (analysis.colorCount < 50) {
+            testColors = [64, 48, 32, 16];
+        } else {
+            testColors = [256, 192, 128, 96, 64];
+        }
+
         let bestBlob = file;
         let bestSize = file.size;
 
-        const testColors = [256, 192, 128, 96, 64, 48, 32];
-        const totalSteps = testColors.length;
-
-        for (let step = 0; step < totalSteps; step++) {
+        for (let step = 0; step < testColors.length; step++) {
             const colors = testColors[step];
 
             const qres = UPNG.quantize(originalRGBA, colors);
@@ -166,7 +191,7 @@ async function render() {
 
             const blob = new Blob([pngData], { type: "image/png" });
 
-            const percent = Math.round(((step + 1) / totalSteps) * 100);
+            const percent = Math.round(((step + 1) / testColors.length) * 100);
             p.progressBar.style.width = percent + "%";
             p.infoDiv.textContent = `Optimiere: ${percent}%`;
 
@@ -198,7 +223,6 @@ async function render() {
         p.downloadLink.download = file.name;
     }
 
-    // Scroll zur Preview
     const previewTop = preview.getBoundingClientRect().top + window.scrollY;
 
     window.scrollTo({
