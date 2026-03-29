@@ -99,7 +99,7 @@ async function prepareImages() {
         download.className = "download";
         download.textContent = t("download");
 
-        // Progressbar
+        // 🔵 Progressbar (blau, ohne Text)
         const progressDiv = document.createElement("div");
         progressDiv.style.width = "100%";
         progressDiv.style.marginTop = "6px";
@@ -107,7 +107,7 @@ async function prepareImages() {
         const progressBar = document.createElement("div");
         progressBar.style.height = "6px";
         progressBar.style.width = "0%";
-        progressBar.style.background = "#4caf50";
+        progressBar.style.background = "#2196f3";
         progressBar.style.borderRadius = "4px";
         progressBar.style.display = "none";
 
@@ -131,11 +131,10 @@ async function render() {
         const { file, img } = originalImages[i];
         const p = previewItems[i];
 
-        p.infoDiv.textContent = "Optimiere…";
+        p.infoDiv.textContent = "Optimiere: 0%";
         p.progressBar.style.display = "block";
         p.progressBar.style.width = "0%";
 
-        // 👉 UI sichtbar machen bevor Berechnung startet
         await nextFrame();
 
         const canvas = document.createElement("canvas");
@@ -157,14 +156,20 @@ async function render() {
             const colors = testColors[step];
 
             const qres = UPNG.quantize(originalRGBA, colors);
-            const pngData = UPNG.encode([qres.abuf], canvas.width, canvas.height, 0, qres.plte.length);
+            const pngData = UPNG.encode(
+                [qres.abuf],
+                canvas.width,
+                canvas.height,
+                0,
+                qres.plte.length
+            );
+
             const blob = new Blob([pngData], { type: "image/png" });
 
-            // Fortschritt
             const percent = Math.round(((step + 1) / totalSteps) * 100);
             p.progressBar.style.width = percent + "%";
+            p.infoDiv.textContent = `Optimiere: ${percent}%`;
 
-            // 👉 UI Update während Verarbeitung
             await nextFrame();
 
             if (blob.size < bestSize) {
@@ -175,16 +180,16 @@ async function render() {
             }
         }
 
-        const saved = 100 - (bestSize / file.size) * 100;
-
-        p.infoDiv.textContent =
-            `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(bestSize / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
-
         p.progressBar.style.width = "100%";
+        p.infoDiv.textContent = "Optimiere: 100%";
+
+        const saved = 100 - (bestSize / file.size) * 100;
 
         setTimeout(() => {
             p.progressBar.style.display = "none";
-        }, 500);
+            p.infoDiv.textContent =
+                `Original ${(file.size / 1024).toFixed(1)} KB → Neu ${(bestSize / 1024).toFixed(1)} KB (${saved.toFixed(1)}%)`;
+        }, 300);
 
         zipFiles.push({ name: file.name, blob: bestBlob });
 
