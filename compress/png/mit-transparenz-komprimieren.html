@@ -17,17 +17,31 @@
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "name": "PNG Kompressor",
+  "alternateName": "PNG Compressor Online",
   "operatingSystem": "Web",
   "applicationCategory": "MultimediaApplication",
   "applicationSubCategory": "Image Compression Tool",
-  "description": "PNG Bilder online komprimieren und Dateigröße reduzieren – ideal für Bilder mit Transparenz.",
-  "url": "https://free-img-compressor.de/compress/png",
+  "description": "Komprimiere PNG Bilder mit Transparenz – ohne Qualitätsverlust und ohne Verlust des Alpha-Kanals. Kostenlos online, direkt im Browser und ohne Anmeldung.",
+  "url": "https://free-img-compressor.de/compress/png/mit-transparenz-komprimieren",
+  "browserRequirements": "JavaScript erforderlich",
+  "softwareVersion": "1.0",
   "fileFormat": "image/png",
   "offers": {
     "@type": "Offer",
     "price": "0",
     "priceCurrency": "EUR"
-  }
+  },
+  "creator": {
+    "@type": "Organization",
+    "name": "Free Image Compressor"
+  },
+  "featureList": [
+    "PNG Bilder komprimieren ohne Qualitätsverlust",
+    "Transparenz bleibt erhalten",
+    "Keine Installation erforderlich",
+    "Direkt im Browser nutzbar",
+    "Mehrere Bilder gleichzeitig komprimieren"
+  ]
 }
 </script>
 
@@ -41,7 +55,7 @@
       "name": "Wie komprimiere ich PNG Bilder?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Lade dein PNG Bild hoch und unser Tool reduziert die Dateigröße automatisch bei gleichbleibender Qualität."
+        "text": "Lade dein PNG Bild hoch und unser Tool reduziert die Dateigröße automatisch bei gleichbleibender Qualität direkt im Browser."
       }
     },
     {
@@ -49,7 +63,7 @@
       "name": "Bleibt die Transparenz bei PNG erhalten?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Ja, die Transparenz von PNG Bildern bleibt bei der Komprimierung vollständig erhalten."
+        "text": "Ja, die Transparenz von PNG Bildern bleibt vollständig erhalten, da das Format verlustfrei verarbeitet wird."
       }
     },
     {
@@ -57,7 +71,15 @@
       "name": "Ist der PNG Kompressor kostenlos?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Ja, du kannst PNG Bilder kostenlos und ohne Anmeldung komprimieren."
+        "text": "Ja, du kannst PNG Bilder kostenlos und ohne Anmeldung online komprimieren."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Werden meine Bilder gespeichert?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Nein, alle Bilder werden direkt im Browser verarbeitet und nicht auf einem Server gespeichert."
       }
     }
   ]
@@ -86,6 +108,12 @@
       "position": 3,
       "name": "PNG Kompressor",
       "item": "https://free-img-compressor.de/compress/png"
+    },
+            {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "PNG mit Transparenz komprimieren",
+      "item": "https://free-img-compressor.de/compress/png/mit-transparenz-komprimieren"
     }
   ]
 }
