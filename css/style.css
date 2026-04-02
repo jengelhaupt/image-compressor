@@ -295,6 +295,8 @@ padding: 15px 0px;
     font-size: 0.9em;
     opacity: 0.9;
   }
+    #dropzone {
+    background-position-x: -250px;
 }
 
 @media (min-width:431px){
