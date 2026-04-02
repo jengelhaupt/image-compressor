@@ -62,7 +62,8 @@ p, li {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    position: relative
+    position: relative;
+    color: white;
 }
 
 .dz-error {
