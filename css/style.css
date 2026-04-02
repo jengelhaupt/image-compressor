@@ -55,15 +55,7 @@ p, li {
 }
 
 #dropzone {
-    background-image: url("/media/wolf-natural-environment.webp");
-    background-size: cover;
-    background-position: center;
-    min-height: 280px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
     position: relative;
-    color: white;
 }
 
 .dz-error {
