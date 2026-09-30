@@ -1,2 +1,8 @@
 User-agent: *
 Disallow: /delete/
+
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: ChatGPT-User
+User-agent: OAI-SearchBot
+Allow: /
