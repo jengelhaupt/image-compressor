@@ -2,14 +2,14 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://free-img-compressor.de/</loc>
+    <loc>https://free-img-compressor.de</loc>
     <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en"/>
     <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de"/>
   </url>
   <url>
-    <loc>https://free-img-compressor.de/en/</loc>
+    <loc>https://free-img-compressor.de/en</loc>
     <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en"/>
     <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr"/>
