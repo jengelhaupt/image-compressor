@@ -18,15 +18,13 @@
   font: inherit;
 }
 
-@media (prefers-color-scheme: dark) {
-  #fic-reviews {
-    --fic-star-off: #555;
-    --fic-border: #444;
-    --fic-muted: #a0a0a0;
-    --fic-accent: #4c8dff;
-    --fic-error: #ef9a9a;
-    --fic-ok: #81c784;
-  }
+[data-bs-theme="dark"] #fic-reviews {
+  --fic-star-off: #555;
+  --fic-border: #444;
+  --fic-muted: #a0a0a0;
+  --fic-accent: #4c8dff;
+  --fic-error: #ef9a9a;
+  --fic-ok: #81c784;
 }
 
 #fic-reviews * { box-sizing: border-box; }
