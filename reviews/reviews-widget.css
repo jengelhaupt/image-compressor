@@ -11,8 +11,9 @@
   --fic-error: #c62828;
   --fic-ok: #2e7d32;
 
-  max-width: 44rem;
-  margin: 2rem auto;
+  width: 100%;
+  max-width: none;
+  margin: 2rem 0;
   color: var(--fic-text);
   font: inherit;
 }
