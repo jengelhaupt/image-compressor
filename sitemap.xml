@@ -1,60 +1,256 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-    <url>
-        <loc>https://free-img-compressor.de</loc>
-    </url>
-    <url>
-        <loc>https://free-img-compressor.de/compress</loc>
-    </url>
-    <url>
-        <loc>https://free-img-compressor.de/compress/jpg</loc>
-    </url>
-        <url>
-        <loc>https://free-img-compressor.de/compress/jpg/unter-100kb-komprimieren</loc>
-    </url>
-            <url>
-        <loc>https://free-img-compressor.de/compress/jpg/unter-250kb-komprimieren</loc>
-    </url>
-                <url>
-        <loc>https://free-img-compressor.de/compress/jpg/mehrere-bilder-verkleinern</loc>
-    </url>
-    <url>
-        <loc>https://free-img-compressor.de/compress/png</loc>
-    </url>
-    <url>
-        <loc>https://free-img-compressor.de/compress/pdf</loc>
-    </url>
-    <url>
-        <loc>https://free-img-compressor.de/compress/webp</loc>
-    </url>
-    <url>
-        <loc>https://free-img-compressor.de/datenschutz.html</loc>
-    </url>
-    <url>
-        <loc>https://free-img-compressor.de/nutzungsbedingungen.html</loc>
-    </url>
-        <url>
-        <loc>https://free-img-compressor.de/tr</loc>
-    </url>
-    <url>
-        <loc>https://free-img-compressor.de/tr/compress</loc>
-    </url>
-    <url>
-        <loc>https://free-img-compressor.de/tr/compress/jpg</loc>
-    </url>
-    <url>
-        <loc>https://free-img-compressor.de/tr/compress/png</loc>
-    </url>
-    <url>
-        <loc>https://free-img-compressor.de/tr/compress/pdf</loc>
-    </url>
-    <url>
-        <loc>https://free-img-compressor.de/tr/compress/webp</loc>
-    </url>
-    <url>
-        <loc>https://free-img-compressor.de/tr/privacy-police</loc>
-    </url>
-    <url>
-        <loc>https://free-img-compressor.de/tr/term-of-use</loc>
-    </url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://free-img-compressor.de/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/en/</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/tr</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/compress</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/en/compress</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/tr/compress</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/compress/jpg</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/jpg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/jpg"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/jpg"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/jpg"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/en/compress/jpg</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/jpg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/jpg"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/jpg"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/jpg"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/tr/compress/jpg</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/jpg"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/jpg"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/jpg"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/jpg"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/compress/jpg/unter-100kb-komprimieren</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/jpg/unter-100kb-komprimieren"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/jpg/under-100kb"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/jpg/yi-100KB-alt%C4%B1na-kue%C3%A7uelt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/jpg/unter-100kb-komprimieren"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/en/compress/jpg/under-100kb</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/jpg/unter-100kb-komprimieren"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/jpg/under-100kb"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/jpg/yi-100KB-alt%C4%B1na-kue%C3%A7uelt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/jpg/unter-100kb-komprimieren"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/tr/compress/jpg/yi-100KB-alt%C4%B1na-kue%C3%A7uelt</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/jpg/unter-100kb-komprimieren"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/jpg/under-100kb"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/jpg/yi-100KB-alt%C4%B1na-kue%C3%A7uelt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/jpg/unter-100kb-komprimieren"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/compress/jpg/unter-250kb-komprimieren</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/jpg/unter-250kb-komprimieren"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/jpg/under-250kb"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/jpg/yi-250KB-alt%C4%B1na-kue%C3%A7uelt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/jpg/unter-250kb-komprimieren"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/en/compress/jpg/under-250kb</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/jpg/unter-250kb-komprimieren"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/jpg/under-250kb"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/jpg/yi-250KB-alt%C4%B1na-kue%C3%A7uelt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/jpg/unter-250kb-komprimieren"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/tr/compress/jpg/yi-250KB-alt%C4%B1na-kue%C3%A7uelt</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/jpg/unter-250kb-komprimieren"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/jpg/under-250kb"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/jpg/yi-250KB-alt%C4%B1na-kue%C3%A7uelt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/jpg/unter-250kb-komprimieren"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/compress/jpg/mehrere-bilder-verkleinern</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/jpg/mehrere-bilder-verkleinern"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/jpg/multiple-images"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/jpg/birden-fazla-JPG-kue%C3%A7uelt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/jpg/mehrere-bilder-verkleinern"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/en/compress/jpg/multiple-images</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/jpg/mehrere-bilder-verkleinern"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/jpg/multiple-images"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/jpg/birden-fazla-JPG-kue%C3%A7uelt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/jpg/mehrere-bilder-verkleinern"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/tr/compress/jpg/birden-fazla-JPG-kue%C3%A7uelt</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/jpg/mehrere-bilder-verkleinern"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/jpg/multiple-images"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/jpg/birden-fazla-JPG-kue%C3%A7uelt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/jpg/mehrere-bilder-verkleinern"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/compress/webp</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/webp"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/webp"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/webp"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/webp"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/en/compress/webp</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/webp"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/webp"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/webp"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/webp"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/tr/compress/webp</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/webp"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/webp"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/webp"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/webp"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/compress/png</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/png"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/png"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/png"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/png"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/en/compress/png</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/png"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/png"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/png"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/png"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/tr/compress/png</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/png"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/png"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/png"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/png"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/compress/png/mit-transparenz-komprimieren</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/png/mit-transparenz-komprimieren"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/png/with-transparency"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/png/seffaflik-ile-sikistir"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/png/mit-transparenz-komprimieren"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/en/compress/png/with-transparency</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/png/mit-transparenz-komprimieren"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/png/with-transparency"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/png/seffaflik-ile-sikistir"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/png/mit-transparenz-komprimieren"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/tr/compress/png/seffaflik-ile-sikistir</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/png/mit-transparenz-komprimieren"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/png/with-transparency"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/png/seffaflik-ile-sikistir"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/png/mit-transparenz-komprimieren"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/compress/pdf</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/pdf"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/pdf"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/pdf"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/pdf"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/en/compress/pdf</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/pdf"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/pdf"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/pdf"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/pdf"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/tr/compress/pdf</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/compress/pdf"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/compress/pdf"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/compress/pdf"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/compress/pdf"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/nutzungsbedingungen.html</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/nutzungsbedingungen.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/terms-of-use"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/term-of-use"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/nutzungsbedingungen.html"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/en/terms-of-use</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/nutzungsbedingungen.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/terms-of-use"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/term-of-use"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/nutzungsbedingungen.html"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/tr/term-of-use</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/nutzungsbedingungen.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/terms-of-use"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/term-of-use"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/nutzungsbedingungen.html"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/datenschutz.html</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/datenschutz.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/privacy-police"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/datenschutz.html"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/en/privacy-policy</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/datenschutz.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/privacy-police"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/datenschutz.html"/>
+  </url>
+  <url>
+    <loc>https://free-img-compressor.de/tr/privacy-police</loc>
+    <xhtml:link rel="alternate" hreflang="de" href="https://free-img-compressor.de/datenschutz.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://free-img-compressor.de/en/privacy-policy"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://free-img-compressor.de/tr/privacy-police"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://free-img-compressor.de/datenschutz.html"/>
+  </url>
 </urlset>
