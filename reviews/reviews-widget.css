@@ -1,0 +1,129 @@
+/* Bewertungs-Widget – Farben lassen sich über CSS-Variablen an dein Design anpassen */
+#fic-reviews {
+  --fic-star: #f5a623;
+  --fic-star-off: #cfcfcf;
+  --fic-border: #d9d9d9;
+  --fic-bg: transparent;
+  --fic-text: inherit;
+  --fic-muted: #6b6b6b;
+  --fic-accent: #1f6feb;
+  --fic-accent-text: #fff;
+  --fic-error: #c62828;
+  --fic-ok: #2e7d32;
+
+  max-width: 44rem;
+  margin: 2rem auto;
+  color: var(--fic-text);
+  font: inherit;
+}
+
+@media (prefers-color-scheme: dark) {
+  #fic-reviews {
+    --fic-star-off: #555;
+    --fic-border: #444;
+    --fic-muted: #a0a0a0;
+    --fic-accent: #4c8dff;
+    --fic-error: #ef9a9a;
+    --fic-ok: #81c784;
+  }
+}
+
+#fic-reviews * { box-sizing: border-box; }
+
+.fic-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+.fic-avg { font-size: 2rem; font-weight: 700; line-height: 1; }
+.fic-count { color: var(--fic-muted); }
+
+/* Sterne-Anzeige (auch für Teilwerte, z. B. 4,6) */
+.fic-stars {
+  position: relative;
+  display: inline-block;
+  font-size: 1.25rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  color: var(--fic-star-off);
+}
+.fic-stars-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--fic-star);
+}
+
+.fic-list { list-style: none; margin: 0 0 2rem; padding: 0; }
+.fic-item {
+  border: 1px solid var(--fic-border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  background: var(--fic-bg);
+}
+.fic-item-head { display: flex; gap: 0.75rem; align-items: baseline; flex-wrap: wrap; }
+.fic-item-name { font-weight: 600; }
+.fic-item-date { color: var(--fic-muted); font-size: 0.875rem; }
+.fic-item-text { margin: 0.4rem 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.fic-empty { color: var(--fic-muted); margin: 0 0 2rem; }
+
+/* Formular */
+.fic-form { border-top: 1px solid var(--fic-border); padding-top: 1.25rem; }
+.fic-form h3 { margin: 0 0 0.75rem; }
+.fic-field { margin-bottom: 0.9rem; }
+.fic-field label, .fic-legend { display: block; margin-bottom: 0.25rem; font-weight: 600; }
+.fic-form input[type="text"], .fic-form textarea {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--fic-border);
+  border-radius: 6px;
+  padding: 0.5rem 0.65rem;
+}
+.fic-form textarea { min-height: 7rem; resize: vertical; }
+.fic-form input:focus-visible, .fic-form textarea:focus-visible,
+.fic-star-btn:focus-visible, .fic-submit:focus-visible {
+  outline: 2px solid var(--fic-accent);
+  outline-offset: 2px;
+}
+.fic-hint { color: var(--fic-muted); font-size: 0.875rem; margin-top: 0.2rem; }
+
+.fic-pick { display: inline-flex; gap: 0.15rem; }
+.fic-star-btn {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0.1rem 0.15rem;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--fic-star-off);
+}
+.fic-star-btn.is-on { color: var(--fic-star); }
+
+.fic-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+.fic-submit {
+  font: inherit;
+  font-weight: 600;
+  background: var(--fic-accent);
+  color: var(--fic-accent-text);
+  border: 0;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+}
+.fic-submit[disabled] { opacity: 0.6; cursor: not-allowed; }
+
+.fic-msg { margin-top: 0.75rem; min-height: 1.5em; }
+.fic-msg.is-error { color: var(--fic-error); }
+.fic-msg.is-ok { color: var(--fic-ok); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .fic-star-btn { transition: color 0.12s ease; }
+}
