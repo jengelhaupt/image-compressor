@@ -40,7 +40,10 @@
       errRate: "Zu viele Bewertungen in kurzer Zeit. Bitte versuche es später erneut.",
       errGeneric: "Das hat leider nicht geklappt. Bitte versuche es später erneut.",
       errLoad: "Bewertungen konnten nicht geladen werden.",
-      anonymous: "Anonym"
+      anonymous: "Anonym",
+      translatedFrom: function (l) { return "Automatisch übersetzt aus dem " + ({ de: "Deutschen", en: "Englischen", tr: "Türkischen" })[l]; },
+      showOriginal: "Original anzeigen",
+      showTranslation: "Übersetzung anzeigen"
     },
     en: {
       title: "Reviews",
@@ -62,7 +65,10 @@
       errRate: "Too many reviews in a short time. Please try again later.",
       errGeneric: "That didn't work. Please try again later.",
       errLoad: "Reviews could not be loaded.",
-      anonymous: "Anonymous"
+      anonymous: "Anonymous",
+      translatedFrom: function (l) { return "Automatically translated from " + ({ de: "German", en: "English", tr: "Turkish" })[l]; },
+      showOriginal: "Show original",
+      showTranslation: "Show translation"
     },
     tr: {
       title: "Değerlendirmeler",
@@ -84,7 +90,10 @@
       errRate: "Kısa sürede çok fazla değerlendirme. Lütfen daha sonra tekrar dene.",
       errGeneric: "Bu işlem başarısız oldu. Lütfen daha sonra tekrar dene.",
       errLoad: "Değerlendirmeler yüklenemedi.",
-      anonymous: "Anonim"
+      anonymous: "Anonim",
+      translatedFrom: function (l) { return ({ de: "Almanca’dan", en: "İngilizce’den", tr: "Türkçe’den" })[l] + " otomatik olarak çevrildi"; },
+      showOriginal: "Orijinali göster",
+      showTranslation: "Çeviriyi göster"
     }
   };
 
@@ -149,13 +158,29 @@
       head.appendChild(el("span", "fic-item-name", r.name || t.anonymous));
       head.appendChild(el("span", "fic-item-date", formatDate(r.created_at)));
       li.appendChild(head);
-      li.appendChild(el("p", "fic-item-text", r.text));
+      var body = el("p", "fic-item-text", r.text);
+      li.appendChild(body);
+
+      if (r.translated && r.original) {
+        var note = el("div", "fic-item-note");
+        note.appendChild(el("span", "", t.translatedFrom(r.source_lang) + " · "));
+        var toggle = el("button", "fic-link", t.showOriginal);
+        toggle.type = "button";
+        var showingOriginal = false;
+        toggle.addEventListener("click", function () {
+          showingOriginal = !showingOriginal;
+          body.textContent = showingOriginal ? r.original : r.text;
+          toggle.textContent = showingOriginal ? t.showTranslation : t.showOriginal;
+        });
+        note.appendChild(toggle);
+        li.appendChild(note);
+      }
       list.appendChild(li);
     });
   }
 
   function loadReviews() {
-    fetch(API + "/api/reviews")
+    fetch(API + "/api/reviews?lang=" + encodeURIComponent(lang))
       .then(function (r) { return r.json(); })
       .then(renderReviews)
       .catch(function () {
